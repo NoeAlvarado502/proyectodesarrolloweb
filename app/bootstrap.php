@@ -94,12 +94,51 @@ function icon(string $name, string $class = ''): string
         'star'   => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
         'percent'=> '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
         'calendar'=>'<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>',
-        'refresh' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>'
+        'refresh' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
+        'lock' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+        'eye' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+        'eye-off' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>',
+        'logout' => '<svg class=":class" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>'
     ];
     $template = $icons[$name] ?? '';
     $finalClass = trim('icon ' . str_replace('icon', '', $class));
     return str_replace(':class', htmlspecialchars($finalClass, ENT_QUOTES, 'UTF-8'), $template);
 }
+
+function currentUser(): ?array
+{
+    return $_SESSION['user'] ?? null;
+}
+
+function ensureAuthTable(): void
+{
+    static $ensured = false;
+    if ($ensured) return;
+    $ensured = true;
+    try {
+        $pdo = db();
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `users` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `username` varchar(50) NOT NULL UNIQUE,
+            `password` varchar(255) NOT NULL,
+            `name` varchar(100) NOT NULL,
+            `email` varchar(150) NOT NULL UNIQUE,
+            `role` varchar(50) NOT NULL DEFAULT 'Administrador',
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $count = (int)$pdo->query("SELECT COUNT(*) FROM `users`")->fetchColumn();
+        if ($count === 0) {
+            $hash = password_hash('admin123', PASSWORD_DEFAULT);
+            $ins = $pdo->prepare('INSERT INTO `users` (`username`, `password`, `name`, `email`, `role`) VALUES (?, ?, ?, ?, ?)');
+            $ins->execute(['admin', $hash, 'Coordinación Académica', 'admin@colegio.edu.gt', 'Administrador']);
+        }
+    } catch (Throwable) {
+        // Fallback silently if DB connection is deferred
+    }
+}
+
 function verifyCsrf(): void
 {
     if (!hash_equals(csrfToken(), (string)($_POST['_token'] ?? ''))) {
@@ -113,6 +152,14 @@ function render(string $page, array $__data = []): void
     if (!is_file($contentFile)) { http_response_code(500); exit('Vista no encontrada.'); }
     ob_start(); require $contentFile; $content = ob_get_clean();
     $flash = takeFlash(); require __DIR__ . '/views/layout.php';
+}
+function renderAuth(string $page, array $__data = []): void
+{
+    extract($__data, EXTR_OVERWRITE);
+    $contentFile = __DIR__ . '/views/' . $page . '.php';
+    if (!is_file($contentFile)) { http_response_code(500); exit('Vista no encontrada.'); }
+    $flash = takeFlash();
+    require $contentFile;
 }
 function partial(string $path, array $__data = []): string
 {

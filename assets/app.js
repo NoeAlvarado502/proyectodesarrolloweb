@@ -382,4 +382,65 @@ document.addEventListener('DOMContentLoaded', () => {
     // Evaluar estado al cargar
     updateScoreState();
   });
+
+  // 10. Alternar visibilidad de contraseña (Login)
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  const passwordInput = document.getElementById('password');
+  if (togglePasswordBtn && passwordInput) {
+    togglePasswordBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isPassword = passwordInput.getAttribute('type') === 'password';
+      passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+
+      const eyeOpen = togglePasswordBtn.querySelector('.icon-eye-open');
+      const eyeClosed = togglePasswordBtn.querySelector('.icon-eye-closed');
+      if (eyeOpen && eyeClosed) {
+        eyeOpen.style.display = isPassword ? 'none' : 'inline-flex';
+        eyeClosed.style.display = isPassword ? 'inline-flex' : 'none';
+      }
+
+      togglePasswordBtn.setAttribute('title', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      togglePasswordBtn.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      passwordInput.focus();
+    });
+  }
+
+  // 11. Burbuja de perfil y menú desplegable (Dashboard)
+  const profileBubbleBtn = document.getElementById('profileBubbleBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  if (profileBubbleBtn && profileDropdown) {
+    const toggleDropdown = (open) => {
+      const willOpen = typeof open === 'boolean' ? open : !profileDropdown.classList.contains('is-open');
+      if (willOpen) {
+        profileDropdown.classList.add('is-open');
+        profileBubbleBtn.setAttribute('aria-expanded', 'true');
+        profileDropdown.setAttribute('aria-hidden', 'false');
+      } else {
+        profileDropdown.classList.remove('is-open');
+        profileBubbleBtn.setAttribute('aria-expanded', 'false');
+        profileDropdown.setAttribute('aria-hidden', 'true');
+      }
+    };
+
+    profileBubbleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', (e) => {
+      if (!profileDropdown.contains(e.target) && !profileBubbleBtn.contains(e.target)) {
+        toggleDropdown(false);
+      }
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && profileDropdown.classList.contains('is-open')) {
+        toggleDropdown(false);
+        profileBubbleBtn.focus();
+      }
+    });
+  }
 });
+

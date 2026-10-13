@@ -9,6 +9,7 @@ Plataforma integral de gestión y control académico desarrollada con **Flight P
 - [Características Principales](#-características-principales)
   - [Módulos del Sistema](#módulos-del-sistema)
   - [Seguridad y Validaciones](#seguridad-y-validaciones)
+- [Credenciales de Acceso](#-credenciales-de-acceso)
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Requisitos del Entorno](#-requisitos-del-entorno)
@@ -36,45 +37,70 @@ A diferencia de aplicaciones pesadas basadas en CMS o frameworks monolíticos, e
 
 ### Módulos del Sistema
 
-1. **👨‍🎓 Gestión de Alumnos**:
+1. **🔐 Autenticación y Control de Sesión (Login / Logout)**:
+   - Formulario de ingreso centrado en card minimalista con inputs protegidos.
+   - Alternador interactivo para mostrar/ocultar contraseña con icono dinámico.
+   - Protección global de rutas mediante filtro de enrutamiento nativo de Flight PHP.
+   - Burbuja de usuario en la esquina superior derecha del panel con menú desplegable flotante (información concisa del perfil y acción para cerrar sesión).
+
+2. **👨‍🎓 Gestión de Alumnos**:
    - Registro con nombres, apellidos, fecha de nacimiento y asignación de carrera.
    - Subida y almacenamiento seguro de fotografías de perfil (`storage/uploads/`).
    - Expediente individual con consulta de cursos asignados, calificaciones y promedio.
 
-2. **🏛️ Carreras y Mallas Curriculares**:
+3. **🏛️ Carreras y Mallas Curriculares**:
    - Catálogo de carreras y planes de estudio.
    - Configuración dinámica de semestres por carrera.
    - Asignación de cursos por semestre curricular (obligatorios / electivos).
 
-3. **📚 Catálogo de Cursos**:
+4. **📚 Catálogo de Cursos**:
    - Creación, edición y administración de asignaturas.
    - Relación directa con la estructura de semestres y secciones.
 
-4. **👨‍🏫 Catedráticos / Docentes**:
+5. **👨‍🏫 Catedráticos / Docentes**:
    - Ficha integral con código docente (ej. `C-001`), DPI, correo, teléfono y especialidad/título.
    - Estados de disponibilidad (`activo` / `inactivo`).
    - Vista detallada del docente con historial de secciones y asignaturas impartidas.
 
-5. **🗓️ Períodos Académicos**:
+6. **🗓️ Períodos Académicos**:
    - Ciclos lectivos (ej. `2026-I`, `2026-II`) con fechas de inicio y cierre.
    - Activación de período vigente para control automático del ciclo actual.
 
-6. **🏷️ Secciones, Horarios y Cupos**:
+7. **🏷️ Secciones, Horarios y Cupos**:
    - Apertura de secciones vinculando curso, docente, período y aula.
    - Inscripción de alumnos con control estricto de cupo disponible.
    - Registro de ponderaciones y actas de calificaciones finales con cálculo de aprobación.
 
-7. **📊 Reportes y Consultas Especializadas**:
+8. **📊 Reportes y Consultas Especializadas**:
    - **Reporte General de Estudiantes**: Filtros por carrera, período y estado académico.
    - **Reporte de Calificaciones**: Estadísticas de rendimiento y notas por sección.
    - **Consulta Individual de Alumno**: Búsqueda instantánea por carné o apellido con historial académico completo.
    - **Vistas preparadas para Impresión**: Reglas CSS `@media print` para exportación limpia a PDF o impresión física sin barras laterales ni botones innecesarios.
 
 ### Seguridad y Validaciones
+- **Filtro de Enrutamiento y Control de Sesión**: Validación de sesiones activas en cada petición mediante `Flight::before('start', ...)` con redirección automática al login.
+- **Hashing Criptográfico de Contraseñas**: Manejo de credenciales mediante `password_hash()` con algoritmo Bcrypt y verificación mediante `password_verify()`.
+- **Prevención de Fijación de Sesión**: Regeneración de identificador de sesión (`session_regenerate_id(true)`) al autenticarse exitosamente.
 - **Prevención de Inyecciones SQL**: Todas las transacciones se realizan mediante PDO con sentencias preparadas nativas (`PDO::ATTR_EMULATE_PREPARES => false`).
 - **Protección CSRF**: Formularios protegidos mediante generación y validación de tokens criptográficos por sesión (`csrfToken()`, `csrfField()`).
 - **Mitigación XSS**: Sanitización de salidas dinámicas con función auxiliar `e()`.
 - **Subida Segura de Archivos**: Validación de tipos MIME (`image/jpeg`, `image/png`, `image/webp`), renombramiento con hashes únicos y protección contra ejecución directa en `storage/uploads/.htaccess`.
+
+---
+
+## 🔑 Credenciales de Acceso
+
+El sistema incluye un usuario administrativo precargado en la base de datos:
+
+| Campo | Valor |
+| :--- | :--- |
+| **Usuario** | `admin` |
+| **Contraseña** | `admin123` |
+| **Rol** | `Administrador` |
+| **Correo** | `admin@colegio.edu.gt` |
+
+> [!NOTE]
+> Al intentar acceder a cualquier ruta del sistema sin haber iniciado sesión, el sistema redirigirá automáticamente a la pantalla de ingreso (`/login`).
 
 ---
 
@@ -106,8 +132,9 @@ ProyectoFinalFlight/
 │   ├── bootstrap.php        # Configuración PDO, variables de entorno y helpers
 │   ├── routes.php           # Definición de rutas, controladores y vistas
 │   └── views/               # Plantillas PHP y componentes
-│       ├── layout.php       # Layout maestro (Sidebar, Navbar, Flash messages)
+│       ├── layout.php       # Layout maestro (Sidebar, Navbar, Burbuja de perfil)
 │       ├── dashboard.php    # Panel de control con métricas rápidas
+│       ├── auth/            # Módulo de autenticación (login con card interactiva)
 │       ├── careers/         # Módulo de carreras y planes de estudio
 │       ├── courses/         # Módulo de asignaturas
 │       ├── periods/         # Módulo de ciclos y períodos académicos
@@ -188,6 +215,8 @@ http://localhost/ProyectoFinalFlight/
 
 | Módulo | Ruta | Descripción |
 | :--- | :--- | :--- |
+| **Ingreso / Login** | `/login` | Pantalla de inicio de sesión con card interactiva |
+| **Cierre de Sesión** | `/logout` | Destrucción de sesión y redirección protegida |
 | **Inicio** | `/` | Dashboard principal con estadísticas del ciclo |
 | **Alumnos** | `/alumnos` | Listado, registro y expediente de estudiantes |
 | **Alumnos (Nuevo)** | `/alumnos/nuevo` | Formulario con carga de fotografía |
@@ -206,6 +235,10 @@ http://localhost/ProyectoFinalFlight/
 
 El archivo `database/setup.sql` precarga datos listos para probar inmediatamente:
 
+- **Usuario administrativo inicial**:
+  - **Usuario**: `admin`
+  - **Contraseña**: `admin123` (o `admin`)
+  - **Perfil**: Coordinación Académica (`admin@colegio.edu.gt`)
 - **Períodos configurados**:
   - `2026-I`: Período activo actual.
   - `2026-II`: Período programado / cerrado.

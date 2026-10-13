@@ -68,12 +68,32 @@
     <main class="main">
       <header class="topbar">
         <div></div>
-        <div class="top-user">
-          <span class="user-avatar"><?= icon('user') ?></span>
-          <span>
-            <strong>Coordinación</strong>
-            <small>Control escolar</small>
-          </span>
+        <div class="profile-bubble-container">
+          <button type="button" class="profile-bubble" id="profileBubbleBtn" aria-expanded="false" aria-haspopup="true" aria-label="Perfil y opciones de sesión" title="Mi perfil">
+            <span class="bubble-avatar-icon"><?= icon('user') ?></span>
+          </button>
+
+          <div class="profile-dropdown-menu" id="profileDropdown" aria-hidden="true">
+            <div class="profile-dropdown-brief">
+              <div class="profile-dropdown-avatar"><?= icon('user') ?></div>
+              <div class="profile-dropdown-meta">
+                <span class="profile-name"><?= e($_SESSION['user']['name'] ?? 'Administrador') ?></span>
+                <span class="profile-username">@<?= e($_SESSION['user']['username'] ?? 'admin') ?></span>
+                <span class="profile-role-tag"><?= e($_SESSION['user']['role'] ?? 'Administrador') ?></span>
+              </div>
+            </div>
+            <div class="profile-dropdown-details">
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">Correo:</span>
+                <span class="profile-detail-value"><?= e($_SESSION['user']['email'] ?? 'admin@colegio.edu.gt') ?></span>
+              </div>
+            </div>
+            <div class="profile-dropdown-separator"></div>
+            <a href="<?= e(url('logout')) ?>" class="profile-logout-action">
+              <?= icon('logout') ?>
+              <span>Cerrar sesión</span>
+            </a>
+          </div>
         </div>
       </header>
 
