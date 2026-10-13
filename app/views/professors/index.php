@@ -94,13 +94,13 @@
               <td data-label="Secciones activas">
                 <span class="muted"><?= (int)$p['active_sections_count'] ?> <?= (int)$p['active_sections_count'] === 1 ? 'sección' : 'secciones' ?></span>
               </td>
-              <td data-label="Acciones">
+              <td data-label="Acciones" style="text-align: right;">
                 <div class="table-actions">
-                  <a class="button secondary small" href="<?= e(url('catedraticos/' . $p['id'])) ?>" title="Ver ficha del catedrático">
+                  <a class="button secondary small" href="<?= e(url('catedraticos/' . $p['id'])) ?>" title="Ver ficha del catedrático" aria-label="Ver ficha del catedrático">
                     <?= icon('info') ?>
                     <span>Ficha</span>
                   </a>
-                  <a class="button secondary small" href="<?= e(url('catedraticos/' . $p['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('catedraticos/' . $p['id'] . '/editar')) ?>" title="Editar datos del catedrático" aria-label="Editar datos">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>
@@ -108,7 +108,7 @@
                     <form method="post" action="<?= e(url('catedraticos/' . $p['id'] . '/eliminar')) ?>" 
                           data-confirm="¿Deseas eliminar al catedrático &quot;<?= e($p['first_name'] . ' ' . $p['last_name']) ?>&quot;?">
                       <?= csrfField() ?>
-                      <button class="button danger-outline small" type="submit" title="Eliminar registro">
+                      <button class="button danger-outline small" type="submit" title="Eliminar registro" aria-label="Eliminar registro">
                         <?= icon('trash') ?>
                         <span>Eliminar</span>
                       </button>
@@ -116,7 +116,8 @@
                   <?php else: ?>
                     <form method="post" action="<?= e(url('catedraticos/' . $p['id'] . '/toggle-estado')) ?>">
                       <?= csrfField() ?>
-                      <button class="button secondary small" type="submit" title="Alternar estado">
+                      <button class="button secondary small" type="submit" title="<?= $p['status'] === 'activo' ? 'Desactivar catedrático' : 'Activar catedrático' ?>" aria-label="<?= $p['status'] === 'activo' ? 'Desactivar' : 'Activar' ?>">
+                        <?= icon($p['status'] === 'activo' ? 'close' : 'check') ?>
                         <span><?= $p['status'] === 'activo' ? 'Desactivar' : 'Activar' ?></span>
                       </button>
                     </form>

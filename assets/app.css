@@ -520,6 +520,8 @@ button, input, select, textarea {
   box-shadow: var(--shadow-xs);
   overflow: hidden;
   margin-bottom: 20px;
+  container-type: inline-size;
+  container-name: panel;
 }
 
 .panel-heading {
@@ -622,6 +624,14 @@ td {
   color: var(--text-secondary);
   font-size: 13.5px;
   vertical-align: middle;
+}
+
+th:last-child,
+td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  width: 1%;
+  padding-right: 18px;
 }
 
 tbody tr:last-child td {
@@ -2017,6 +2027,86 @@ dialog.custom-modal::backdrop {
   padding: 90px 18px;
 }
 
+
+/* Responsive Panel Actions via Container Queries (Adaptación automática al ancho del panel) */
+@container panel (max-width: 1080px) {
+  .table-actions .button span,
+  .row-action span {
+    display: none !important;
+  }
+
+  .table-actions .button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+    border-radius: var(--radius-sm);
+  }
+
+  .table-actions .button .icon {
+    margin: 0 !important;
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .row-action {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: var(--bg-subtle) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
+/* Media Query de respaldo para pantallas de hasta 1366px (Laptops, pantallas medianas y divididas) */
+@media (max-width: 1366px) {
+  .table-actions .button span,
+  .panel .table-actions .button span,
+  .panel .row-action span,
+  .row-action span {
+    display: none !important;
+  }
+
+  .table-actions .button,
+  .panel .table-actions .button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+    border-radius: var(--radius-sm);
+  }
+
+  .table-actions .button .icon,
+  .panel .table-actions .button .icon {
+    margin: 0 !important;
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .row-action,
+  .panel .row-action {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: var(--bg-subtle) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+  }
+}
 
 /* Responsive & Mobile */
 @media (max-width: 1024px) {
