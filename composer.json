@@ -1,0 +1,8 @@
+{
+  "name": "app/control-academico-flight",
+  "description": "Sistema academico para control de alumnos y notas con Flight PHP",
+  "type": "project",
+  "require": {"php": "^8.0 || ^8.1", "flightphp/core": "^3.18"},
+  "autoload": {"psr-4": {"App\\": "app/"}},
+  "scripts": {"serve": "php -S localhost:8000 -t public"}
+}
