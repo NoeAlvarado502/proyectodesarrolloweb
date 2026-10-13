@@ -1,190 +1,231 @@
 <?php
-$total = $totalStudents;
-$generated = date('d/m/Y H:i');
+declare(strict_types=1);
+
+$generatedDate = date('d/m/Y H:i');
+$students = $reportData['students'];
+$grouped = $reportData['grouped'];
+$summary = $reportData['summary'];
+$careers = $reportData['careers'];
+$filters = $reportData['filters'];
+$selectedCareerId = (int)$filters['career_id'];
+$selectedStatus = (string)$filters['status'];
+$searchQuery = (string)$filters['q'];
+
+// Construir URL para exportar a Excel manteniendo filtros actuales
+$excelUrl = url('reportes/alumnos?' . http_build_query([
+    'career_id' => $selectedCareerId,
+    'status' => $selectedStatus,
+    'q' => $searchQuery,
+    'export' => 'excel'
+]));
 ?>
-<div class="page-heading">
-  <div>
-    <h1>Alumnos por Carrera</h1>
-  </div>
-  <div class="heading-actions">
-    <button class="button secondary no-print" onclick="window.print()">
-      <?= icon('print') ?>
-      <span>Imprimir informe</span>
-    </button>
-  </div>
-</div>
+<div class="report-container">
 
-<!-- KPI Cards -->
-<div class="report-kpis">
-  <div class="kpi-card">
-    <div class="kpi-icon"><?= icon('users', 'kpi-svg') ?></div>
-    <div>
-      <div class="kpi-val"><?= $total ?></div>
-      <div class="kpi-label">Alumnos registrados</div>
+  <!-- Encabezado Institucional (Visible únicamente en impresión / PDF) -->
+  <div class="institutional-header-print">
+    <div class="institutional-header-left">
+      <div class="institutional-header-title">Sistema de Control Académico</div>
+      <div class="institutional-header-subtitle">Reporte General de Alumnos por Carrera</div>
     </div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon"><?= icon('academic', 'kpi-svg') ?></div>
-    <div>
-      <div class="kpi-val"><?= $totalCareers ?></div>
-      <div class="kpi-label">Programas académicos</div>
-    </div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon"><?= icon('report-users', 'kpi-svg') ?></div>
-    <div>
-      <div class="kpi-val"><?= $totalCareers > 0 ? round($total / $totalCareers, 1) : 0 ?></div>
-      <div class="kpi-label">Promedio por carrera</div>
-    </div>
-  </div>
-  <div class="kpi-card print-only" style="display:none;">
-    <div>
-      <div class="kpi-val" style="font-size:13px;font-weight:500;color:var(--text-muted);">Generado: <?= $generated ?></div>
-    </div>
-  </div>
-</div>
-
-<!-- Distribution Table -->
-<div class="panel" style="margin-bottom:22px;">
-  <div class="panel-heading report-heading">
-    <div>
-      <h2>Distribución por carrera</h2>
-      <p><?= $total ?> alumno<?= $total !== 1 ? 's' : '' ?> en <?= $totalCareers ?> programa<?= $totalCareers !== 1 ? 's' : '' ?></p>
+    <div class="institutional-header-right">
+      <div><strong>Emisión:</strong> <?= e($generatedDate) ?></div>
+      <div><strong>Documento Oficial de Registro</strong></div>
     </div>
   </div>
 
-  <?php if (!$rows): ?>
-    <div class="empty compact">
-      <strong>No hay carreras registradas</strong>
-      <p>Agrega carreras en el apartado de Catálogos para ver la distribución.</p>
+  <!-- Barra Superior de Título y Acciones de Exportación -->
+  <div class="report-header-row no-print">
+    <h1>General de Alumnos por Carrera</h1>
+    <div class="report-actions">
+      <button class="btn-report-export" onclick="window.print()" title="Imprimir en PDF tamaño carta">
+        <?= icon('print') ?>
+        <span>Imprimir / PDF</span>
+      </button>
+      <a class="btn-report-export" href="<?= e($excelUrl) ?>" title="Descargar como archivo de hoja de cálculo Excel">
+        <?= icon('file-spreadsheet') ?>
+        <span>Excel</span>
+      </a>
     </div>
-  <?php else: ?>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Carrera</th>
-            <th>Alumnos inscritos</th>
-            <th>Participación</th>
-            <th class="no-print">Acceso rápido</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($rows as $i => $row):
-            $percent = $total ? round($row['total'] * 100 / $total, 1) : 0;
-            $barW = $total ? round($row['total'] * 100 / $total) : 0;
-          ?>
-            <tr>
-              <td data-label="#" class="muted" style="width:36px;font-weight:600;"><?= $i + 1 ?></td>
-              <td data-label="Carrera">
-                <strong><?= e($row['career']) ?></strong>
-              </td>
-              <td data-label="Inscritos">
-                <span style="font-size:16px;font-weight:700;color:var(--text-primary);"><?= e($row['total']) ?></span>
-                <span style="font-size:13px;color:var(--text-muted);"> alumno<?= $row['total'] != 1 ? 's' : '' ?></span>
-              </td>
-              <td data-label="Participación">
-                <div class="bar-cell">
-                  <div class="bar-track" style="width:160px;">
-                    <span style="width:<?= $barW ?>%;"></span>
-                  </div>
-                  <small style="font-weight:600;min-width:42px;"><?= $percent ?>%</small>
-                </div>
-              </td>
-              <td data-label="Acciones" class="no-print">
-                <a class="row-action" href="<?= e(url('reportes/notas?career_id=' . $row['id'])) ?>">
-                  <span>Ver notas</span>
-                  <?= icon('arrow-right') ?>
-                </a>
-              </td>
-            </tr>
+  </div>
+
+  <!-- Barra de Filtros: Carrera, Estado, Búsqueda -->
+  <div class="report-filters-card no-print">
+    <form class="report-filters-form" method="get" action="<?= e(url('reportes/alumnos')) ?>">
+      <!-- Carrera -->
+      <div class="report-filter-item">
+        <label for="f-career">Carrera</label>
+        <select name="career_id" id="f-career">
+          <option value="0">Todas las carreras</option>
+          <?php foreach ($careers as $c): ?>
+            <option value="<?= e($c['id']) ?>" <?= ((int)$c['id'] === $selectedCareerId) ? 'selected' : '' ?>>
+              <?= e($c['name']) ?>
+            </option>
           <?php endforeach; ?>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th colspan="2">Total general</th>
-            <th><?= $total ?> alumnos</th>
-            <th>100%</th>
-            <th class="no-print"></th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  <?php endif; ?>
-</div>
+        </select>
+      </div>
 
-<!-- Full Student Directory -->
-<div class="panel">
-  <div class="panel-heading report-heading">
-    <div>
-      <h2>Directorio completo de alumnos</h2>
-      <p><?= count($students) ?> expediente<?= count($students) !== 1 ? 's' : '' ?> en el sistema</p>
+      <!-- Estado -->
+      <div class="report-filter-item compact">
+        <label for="f-status">Estado</label>
+        <select name="status" id="f-status">
+          <option value="todas" <?= ($selectedStatus === 'todas') ? 'selected' : '' ?>>Todos</option>
+          <option value="activo" <?= ($selectedStatus === 'activo') ? 'selected' : '' ?>>Activo</option>
+          <option value="inactivo" <?= ($selectedStatus === 'inactivo') ? 'selected' : '' ?>>Inactivo</option>
+          <option value="graduado" <?= ($selectedStatus === 'graduado') ? 'selected' : '' ?>>Graduado</option>
+          <option value="retirado" <?= ($selectedStatus === 'retirado') ? 'selected' : '' ?>>Retirado</option>
+        </select>
+      </div>
+
+      <!-- Búsqueda -->
+      <div class="report-filter-item" style="flex:2;">
+        <label for="f-q">Búsqueda por nombre o código</label>
+        <input 
+          type="text" 
+          id="f-q"
+          name="q" 
+          value="<?= e($searchQuery) ?>" 
+          placeholder="Código carné (ej. AC-00001) o apellido / nombre...">
+      </div>
+
+      <!-- Botones -->
+      <div class="report-filter-buttons">
+        <button type="submit" class="button primary">
+          <?= icon('filter') ?>
+          <span>Aplicar</span>
+        </button>
+        <?php if ($selectedCareerId > 0 || $selectedStatus !== 'todas' || $searchQuery !== ''): ?>
+          <a class="button secondary" href="<?= e(url('reportes/alumnos')) ?>">
+            <?= icon('x') ?>
+            <span>Limpiar</span>
+          </a>
+        <?php endif; ?>
+      </div>
+    </form>
+  </div>
+
+  <!-- Resumen Superior: Total de alumnos y desglose por estado (una línea) -->
+  <div class="report-summary-bar">
+    <div class="report-summary-text">
+      <span>Total alumnos: <strong><?= $summary['total'] ?></strong></span>
+      <span class="report-summary-sep">·</span>
+      <span>Activos: <strong><?= $summary['activos'] ?></strong></span>
+      <span class="report-summary-sep">·</span>
+      <span>Inactivos: <strong><?= $summary['inactivos'] ?></strong></span>
+      <span class="report-summary-sep">·</span>
+      <span>Graduados: <strong><?= $summary['graduados'] ?></strong></span>
+      <span class="report-summary-sep">·</span>
+      <span>Retirados: <strong><?= $summary['retirados'] ?></strong></span>
     </div>
   </div>
 
-  <?php if (!$students): ?>
-    <div class="empty compact">
-      <strong>No hay alumnos registrados</strong>
-      <p>Registra el primer alumno desde el módulo de Alumnos.</p>
+  <!-- Tabla de Resultados -->
+  <?php if (empty($students)): ?>
+    <div class="panel" style="padding:40px 20px;text-align:center;">
+      <p style="margin:0;font-size:15px;color:var(--text-secondary);font-weight:600;">No se encontraron alumnos para los criterios seleccionados.</p>
+      <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Intente modificando los filtros de carrera, estado o búsqueda.</p>
     </div>
   <?php else: ?>
-    <?php
-    // Group students by career
-    $byCareer = [];
-    foreach ($students as $s) {
-      $byCareer[$s['career']][] = $s;
-    }
-    ?>
-    <?php foreach ($byCareer as $careerName => $careerStudents): ?>
-      <div class="career-section">
-        <div class="career-section-header">
-          <?= icon('academic', 'career-section-icon') ?>
-          <span><?= e($careerName) ?></span>
-          <span class="career-count"><?= count($careerStudents) ?> alumno<?= count($careerStudents) !== 1 ? 's' : '' ?></span>
-        </div>
-        <div class="table-wrap" style="border-top:none;">
-          <table>
-            <thead>
-              <tr>
-                <th>Expediente</th>
-                <th>Nombre completo</th>
-                <th>Fecha de nacimiento</th>
-                <th>Edad</th>
-                <th class="no-print">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($careerStudents as $s):
-                $birthDate = new DateTime($s['birth_date']);
-                $age = $birthDate->diff(new DateTime('today'))->y;
-              ?>
-                <tr>
-                  <td data-label="Expediente" class="muted" style="font-weight:600;font-family:monospace;">AC-<?= str_pad((string)$s['id'], 5, '0', STR_PAD_LEFT) ?></td>
-                  <td data-label="Nombre">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                      <img class="mini-photo" src="<?= e(photoUrl($s['photo'])) ?>" alt="">
-                      <strong><?= e($s['first_name'] . ' ' . $s['last_name']) ?></strong>
-                    </div>
-                  </td>
-                  <td data-label="Nacimiento"><?= e(date('d/m/Y', strtotime($s['birth_date']))) ?></td>
-                  <td data-label="Edad"><?= $age ?> años</td>
-                  <td data-label="Acciones" class="no-print" style="text-align:right;">
-                    <a class="row-action" href="<?= e(url('reportes/consulta-alumno?id=' . $s['id'])) ?>">
-                      <span>Consultar</span>
-                      <?= icon('arrow-right') ?>
-                    </a>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  <?php endif; ?>
-</div>
 
-<div class="print-footer">
-  <p>Control Académico &nbsp;·&nbsp; Reporte generado el <?= $generated ?> &nbsp;·&nbsp; <?= $total ?> alumno<?= $total !== 1 ? 's' : '' ?> en <?= $totalCareers ?> carrera<?= $totalCareers !== 1 ? 's' : '' ?></p>
+    <?php if ($selectedCareerId === 0): ?>
+      <!-- MODO "TODAS LAS CARRERAS": Agrupado por carrera con salto de página entre ellas en PDF y subtotal -->
+      <?php 
+      $groupIndex = 0;
+      $totalGroups = count($grouped);
+      foreach ($grouped as $careerName => $gData): 
+        $groupIndex++;
+        $isLastGroup = ($groupIndex === $totalGroups);
+      ?>
+        <div class="report-career-block <?= !$isLastGroup ? 'page-break-after' : '' ?>" style="margin-bottom:20px;">
+          <div class="report-table-wrapper">
+            <table class="report-table">
+              <thead>
+                <tr class="group-header-row">
+                  <th colspan="6" class="text-left" style="font-size:13.5px;color:var(--text-primary);padding:10px 14px;">
+                    <?= e($careerName) ?> &nbsp;<span style="font-weight:400;color:var(--text-muted);font-size:12px;">(<?= $gData['subtotal'] ?> alumno<?= $gData['subtotal'] !== 1 ? 's' : '' ?>)</span>
+                  </th>
+                </tr>
+                <tr>
+                  <th class="text-left" style="width:120px;">Código</th>
+                  <th class="text-left">Apellidos y nombres</th>
+                  <th class="text-left" style="width:200px;">Carrera</th>
+                  <th class="text-left" style="width:140px;">Semestre actual</th>
+                  <th class="text-left" style="width:110px;">Estado</th>
+                  <th class="text-right" style="width:120px;">Ingreso</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($gData['students'] as $st): ?>
+                  <tr>
+                    <td class="text-left code-cell"><?= e($st['code']) ?></td>
+                    <td class="text-left">
+                      <a class="row-link" href="<?= e(url('reportes/consulta-alumno?id=' . $st['id'])) ?>" title="Ver ficha del alumno">
+                        <?= e($st['full_name_sort']) ?>
+                      </a>
+                    </td>
+                    <td class="text-left"><?= e($st['career_name']) ?></td>
+                    <td class="text-left"><?= e($st['current_semester']) ?></td>
+                    <td class="text-left" style="text-transform:capitalize;"><?= e($st['status']) ?></td>
+                    <td class="text-right"><?= e($st['entry_date']) ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+              <tfoot>
+                <tr class="subtotal-row">
+                  <td colspan="5" class="text-left">Subtotal <?= e($careerName) ?>:</td>
+                  <td class="text-right"><?= $gData['subtotal'] ?> alumnos</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      <?php endforeach; ?>
+
+    <?php else: ?>
+      <!-- MODO CARRERA ESPECÍFICA -->
+      <div class="report-table-wrapper">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th class="text-left" style="width:120px;">Código</th>
+              <th class="text-left">Apellidos y nombres</th>
+              <th class="text-left" style="width:220px;">Carrera</th>
+              <th class="text-left" style="width:150px;">Semestre actual</th>
+              <th class="text-left" style="width:110px;">Estado</th>
+              <th class="text-right" style="width:120px;">Ingreso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($students as $st): ?>
+              <tr>
+                <td class="text-left code-cell"><?= e($st['code']) ?></td>
+                <td class="text-left">
+                  <a class="row-link" href="<?= e(url('reportes/consulta-alumno?id=' . $st['id'])) ?>" title="Ver ficha del alumno">
+                    <?= e($st['full_name_sort']) ?>
+                  </a>
+                </td>
+                <td class="text-left"><?= e($st['career_name']) ?></td>
+                <td class="text-left"><?= e($st['current_semester']) ?></td>
+                <td class="text-left" style="text-transform:capitalize;"><?= e($st['status']) ?></td>
+                <td class="text-right"><?= e($st['entry_date']) ?></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+          <tfoot>
+            <tr class="subtotal-row">
+              <td colspan="5" class="text-left">Total de la carrera:</td>
+              <td class="text-right"><?= count($students) ?> alumnos</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    <?php endif; ?>
+
+    <!-- Pie del Reporte: Fecha de emisión y número de página -->
+    <div class="report-footer-meta">
+      <div>Generado el <?= e($generatedDate) ?> · Sistema de Control Académico</div>
+      <div>Página 1 de 1</div>
+    </div>
+
+  <?php endif; ?>
+
 </div>

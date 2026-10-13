@@ -1451,55 +1451,148 @@ Flight::route('POST /catedraticos/@id:[0-9]+/eliminar', function ($id) {
 });
 
 
-Flight::route('GET /reportes/alumnos',function(){
+Flight::route('GET /reportes/alumnos', function () {
     $pdo = db();
-    $rows = $pdo->query('SELECT c.id, c.name career, COUNT(s.id) total FROM careers c LEFT JOIN students s ON s.career_id=c.id GROUP BY c.id ORDER BY total DESC, c.name')->fetchAll();
-    $students = $pdo->query('SELECT s.id, s.first_name, s.last_name, s.birth_date, s.photo, s.created_at, c.name career FROM students s JOIN careers c ON c.id=s.career_id ORDER BY c.name, s.last_name, s.first_name')->fetchAll();
-    $totalStudents = array_sum(array_column($rows, 'total'));
-    $totalCareers = count($rows);
-    render('reports/students', compact('rows','students','totalStudents','totalCareers'));
-});
-Flight::route('GET /reportes/notas',function(){
-    $pdo=db();$careers=$pdo->query('SELECT * FROM careers ORDER BY name')->fetchAll();$courses=$pdo->query('SELECT * FROM courses ORDER BY name')->fetchAll();$sections=$pdo->query('SELECT * FROM sections ORDER BY name')->fetchAll();
-    $career=(int)($_GET['career_id']??0);$course=(int)($_GET['course_id']??0);$section=(int)($_GET['section_id']??0);$semester=(int)($_GET['semester_id']??0);
-    $sql='SELECT s.id student_id,s.first_name,s.last_name,ca.name career,co.name course,se.name section,sm.name semester,sm.id semester_id,g.score FROM grades g JOIN students s ON s.id=g.student_id JOIN careers ca ON ca.id=s.career_id JOIN courses co ON co.id=g.course_id JOIN sections se ON se.id=g.section_id JOIN semesters sm ON sm.id=g.semester_id WHERE 1=1';$params=[];
-    if($career){$sql.=' AND ca.id=?';$params[]=$career;}if($course){$sql.=' AND co.id=?';$params[]=$course;}if($section){$sql.=' AND se.id=?';$params[]=$section;}if($semester){$sql.=' AND sm.id=?';$params[]=$semester;}
-    $sql.=' ORDER BY ca.name,sm.name,co.name,se.name,s.last_name';
-    $q=$pdo->prepare($sql);$q->execute($params);$rows=$q->fetchAll();
-    $semesters=$pdo->query('SELECT * FROM semesters ORDER BY id')->fetchAll();
-    $approved=count(array_filter($rows,fn($r)=>$r['score']>=60));
-    $failed=count($rows)-$approved;
-    $avg=$rows?round(array_sum(array_column($rows,'score'))/count($rows),1):0;
-    render('reports/grades',compact('rows','careers','courses','sections','semesters','career','course','section','semester','approved','failed','avg'));
+    $careerId = (int)($_GET['career_id'] ?? 0);
+    $status = trim((string)($_GET['status'] ?? 'todas'));
+    $q = trim((string)($_GET['q'] ?? ''));
+    $export = strtolower(trim((string)($_GET['export'] ?? '')));
+
+    $reportData = getStudentsReport([
+        'career_id' => $careerId,
+        'status' => $status,
+        'q' => $q
+    ], $pdo);
+
+    if ($export === 'excel' || $export === 'csv') {
+        $headers = ['Código', 'Apellidos y Nombres', 'Carrera', 'Semestre Actual', 'Estado', 'Fecha de Ingreso'];
+        $rows = [];
+        foreach ($reportData['students'] as $st) {
+            $rows[] = [
+                $st['code'],
+                $st['full_name_sort'],
+                $st['career_name'],
+                $st['current_semester'],
+                ucfirst($st['status']),
+                $st['entry_date']
+            ];
+        }
+        $filename = 'reporte_alumnos_' . date('Ymd_His') . '.csv';
+        exportReportCsv($filename, $headers, $rows);
+    }
+
+    render('reports/students', compact('reportData'));
 });
 
-Flight::route('GET /reportes/consulta-alumno(/@id:[0-9]+)', function(?string $paramId = null) {
+Flight::route('GET /reportes/notas', function () {
     $pdo = db();
-    $id = (int)($paramId ?: ($_GET['id'] ?? 0));
-    $raw = (string)($_GET['q'] ?? '');
-    $q = trim(preg_replace('/\s+/', ' ', preg_replace('/[^\p{L}\s\'-]/u', '', $raw)));
-    
-    $student = null;
-    $grades = [];
-    if ($id > 0) {
-        $st = $pdo->prepare('SELECT s.*, c.name career FROM students s JOIN careers c ON c.id=s.career_id WHERE s.id=?');
-        $st->execute([$id]);
-        $student = $st->fetch();
-        if ($student) {
-            $gt = $pdo->prepare('SELECT g.score, g.semester_id, g.section_id, g.course_id, se.name semester, sc.name section, co.name course FROM grades g JOIN semesters se ON se.id=g.semester_id JOIN sections sc ON sc.id=g.section_id JOIN courses co ON co.id=g.course_id WHERE g.student_id=? ORDER BY se.id, co.name');
-            $gt->execute([$id]);
-            $grades = $gt->fetchAll();
+    $periodId = isset($_GET['period_id']) ? (int)$_GET['period_id'] : null;
+    $careerId = (int)($_GET['career_id'] ?? 0);
+    $courseId = (int)($_GET['course_id'] ?? 0);
+    $sectionId = (int)($_GET['section_id'] ?? 0);
+    $export = strtolower(trim((string)($_GET['export'] ?? '')));
+
+    $filters = [
+        'career_id' => $careerId,
+        'course_id' => $courseId,
+        'section_id' => $sectionId
+    ];
+    if ($periodId !== null && $periodId > 0) {
+        $filters['period_id'] = $periodId;
+    }
+
+    $reportData = getGradesReport($filters, $pdo);
+
+    if ($export === 'excel' || $export === 'csv') {
+        $headers = [
+            '#',
+            'Código',
+            'Apellidos y Nombres',
+            'Carrera',
+            'Curso',
+            'Sección',
+            'Período',
+            'Catedrático',
+            'Nota Final',
+            'Estado'
+        ];
+        $rows = [];
+        foreach ($reportData['sections_data'] as $sec) {
+            foreach ($sec['students'] as $st) {
+                $rows[] = [
+                    $st['num'],
+                    $st['student_code'],
+                    $st['full_name_sort'],
+                    $sec['career_name'],
+                    $sec['course_name'],
+                    $sec['section_code'],
+                    $sec['period_name'],
+                    $sec['professor_name'],
+                    $st['final_score'] !== null ? $st['final_score'] : '',
+                    ucfirst($st['status'])
+                ];
+            }
+        }
+        $filename = 'reporte_notas_' . date('Ymd_His') . '.csv';
+        exportReportCsv($filename, $headers, $rows);
+    }
+
+    render('reports/grades', compact('reportData'));
+});
+
+Flight::route('GET /reportes/consulta-alumno(/@id:[0-9]+)', function (?string $paramId = null) {
+    $pdo = db();
+    $selectedId = (int)($paramId ?: ($_GET['id'] ?? 0));
+    $query = trim((string)($_GET['q'] ?? ''));
+
+    // Si viene consulta por texto y no se seleccionó ID explícito
+    if ($query !== '' && $selectedId === 0) {
+        $cleanQ = preg_replace('/^AC-0*/i', '', $query);
+        if (is_numeric($cleanQ)) {
+            $selectedId = (int)$cleanQ;
+        } else {
+            // Buscar coincidencia única o el primer resultado
+            $searchStmt = $pdo->prepare('
+                SELECT id 
+                FROM students 
+                WHERE CONCAT(first_name, " ", last_name) LIKE ? OR CONCAT(last_name, " ", first_name) LIKE ?
+                LIMIT 2
+            ');
+            $searchStmt->execute(['%' . $query . '%', '%' . $query . '%']);
+            $matchedIds = $searchStmt->fetchAll(PDO::FETCH_COLUMN);
+            if (count($matchedIds) === 1) {
+                $selectedId = (int)$matchedIds[0];
+            }
         }
     }
-    
-    if ($q !== '') {
-        $st = $pdo->prepare('SELECT s.id, s.first_name, s.last_name, s.birth_date, s.photo, c.name career FROM students s JOIN careers c ON c.id=s.career_id WHERE CONCAT(s.first_name, " ", s.last_name) LIKE ? ORDER BY s.last_name, s.first_name LIMIT 30');
-        $st->execute(['%' . $q . '%']);
-        $studentList = $st->fetchAll();
-    } else {
-        $studentList = $pdo->query('SELECT s.id, s.first_name, s.last_name, s.birth_date, s.photo, c.name career FROM students s JOIN careers c ON c.id=s.career_id ORDER BY s.last_name, s.first_name LIMIT 50')->fetchAll();
+
+    $profile = null;
+    if ($selectedId > 0) {
+        $profile = getStudentAcademicProfile($selectedId, $pdo);
     }
-    
-    render('reports/student_lookup', compact('student', 'grades', 'studentList', 'id', 'q'));
+
+    // Listado rápido para el selector desplegable
+    if ($query !== '' && $selectedId === 0) {
+        $listStmt = $pdo->prepare('
+            SELECT s.id, s.first_name, s.last_name, c.name AS career_name
+            FROM students s
+            JOIN careers c ON c.id = s.career_id
+            WHERE CONCAT(s.first_name, " ", s.last_name) LIKE ? OR CONCAT(s.last_name, " ", s.first_name) LIKE ?
+            ORDER BY s.last_name ASC, s.first_name ASC
+            LIMIT 40
+        ');
+        $listStmt->execute(['%' . $query . '%', '%' . $query . '%']);
+        $studentList = $listStmt->fetchAll();
+    } else {
+        $studentList = $pdo->query('
+            SELECT s.id, s.first_name, s.last_name, c.name AS career_name
+            FROM students s
+            JOIN careers c ON c.id = s.career_id
+            ORDER BY s.last_name ASC, s.first_name ASC
+            LIMIT 50
+        ')->fetchAll();
+    }
+
+    render('reports/student_lookup', compact('profile', 'query', 'selectedId', 'studentList'));
 });
 
