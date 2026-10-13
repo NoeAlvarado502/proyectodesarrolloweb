@@ -3129,7 +3129,7 @@ dialog.custom-modal::backdrop {
   top: 0;
   background-color: #f8fafc;
   z-index: 5;
-  padding: 10px 14px;
+  padding: 11px 16px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -3140,7 +3140,7 @@ dialog.custom-modal::backdrop {
 }
 
 .report-table tbody td {
-  padding: 10px 14px;
+  padding: 11px 16px;
   border-bottom: 1px solid var(--border-subtle);
   vertical-align: middle;
 }
@@ -3325,14 +3325,14 @@ dialog.custom-modal::backdrop {
 @media print {
   @page {
     size: letter portrait;
-    margin: 12mm 12mm 15mm 12mm;
+    margin: 22mm 20mm 22mm 20mm; /* Márgenes generosos para tamaño carta institucional */
   }
 
   body {
     background: #ffffff !important;
-    color: #000000 !important;
-    font-size: 11pt !important;
-    line-height: 1.35 !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.5 !important;
   }
 
   /* Ocultar elementos de navegación y UI interactiva */
@@ -3361,87 +3361,120 @@ dialog.custom-modal::backdrop {
     width: 100% !important;
   }
 
-  /* Membrete institucional obligatorio */
+  /* Membrete institucional obligatorio con márgenes holgados */
   .institutional-header-print {
     display: flex !important;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 10px;
-    margin-bottom: 14px;
-    border-bottom: 2px solid #0f172a;
+    padding-bottom: 14px !important;
+    margin-bottom: 22px !important;
+    border-bottom: 2px solid #0f172a !important;
   }
 
   .institutional-header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
   }
 
   .institutional-header-title {
-    font-size: 14pt;
-    font-weight: 800;
-    color: #0f172a;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 1.1;
+    font-size: 14pt !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    line-height: 1.2 !important;
   }
 
   .institutional-header-subtitle {
-    font-size: 9pt;
-    color: #475569;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 9pt !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
   }
 
   .institutional-header-right {
-    text-align: right;
-    font-size: 8.5pt;
-    color: #475569;
-    line-height: 1.3;
+    text-align: right !important;
+    font-size: 8.5pt !important;
+    color: #475569 !important;
+    line-height: 1.4 !important;
+  }
+
+  .report-header-row {
+    margin-bottom: 14px !important;
   }
 
   .report-header-row h1 {
-    font-size: 14pt !important;
-    margin-bottom: 6px !important;
+    font-size: 14.5pt !important;
+    margin: 0 0 10px 0 !important;
+    color: #0f172a !important;
   }
 
+  /* Barra de resumen superior con márgenes amplios */
   .report-summary-bar {
     border: 1px solid #cbd5e1 !important;
     border-left: 4px solid #0f172a !important;
-    padding: 6px 10px !important;
+    padding: 10px 14px !important;
     font-size: 9.5pt !important;
-    margin-bottom: 10px !important;
+    margin: 14px 0 20px 0 !important;
     background: #f8fafc !important;
+    border-radius: 4px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .report-table-wrapper {
     max-height: none !important;
     overflow: visible !important;
     border: 1px solid #cbd5e1 !important;
+    margin-bottom: 24px !important;
+    border-radius: 4px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .report-table {
-    font-size: 9.5pt !important;
+    width: 100% !important;
+    font-size: 9pt !important;
+    border-collapse: collapse !important;
   }
 
+  /* Encabezados y celdas con espaciado cómodo (sin pegarse) */
   .report-table thead th {
     position: static !important;
     background-color: #f1f5f9 !important;
     color: #0f172a !important;
     border-bottom: 1.5px solid #0f172a !important;
-    padding: 6px 8px !important;
+    padding: 9px 12px !important;
     font-size: 8.5pt !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em !important;
   }
 
   .report-table tbody td {
-    padding: 5px 8px !important;
+    padding: 8px 12px !important;
     border-bottom: 1px solid #e2e8f0 !important;
+    line-height: 1.4 !important;
+  }
+
+  .report-table tr.subtotal-row td {
+    padding: 9px 12px !important;
+    background-color: #f8fafc !important;
+    border-top: 1.5px solid #0f172a !important;
+    border-bottom: 2px solid #0f172a !important;
+    font-weight: 700 !important;
+  }
+
+  .group-header-row td {
+    padding: 10px 12px !important;
+    background-color: #f1f5f9 !important;
+    border-bottom: 1.5px solid #cbd5e1 !important;
   }
 
   .report-table a.row-link {
     text-decoration: none !important;
-    color: #000000 !important;
+    color: #0f172a !important;
   }
 
   /* El rojo de notas reprobadas se mantiene sutilmente visible en impresión */
@@ -3451,10 +3484,11 @@ dialog.custom-modal::backdrop {
     font-weight: 700 !important;
   }
 
-  /* Salto de página entre carreras para el Reporte A */
+  /* Bloque de carrera con separación y salto de página */
   .report-career-block {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    margin-bottom: 28px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .page-break-after {
@@ -3464,22 +3498,78 @@ dialog.custom-modal::backdrop {
 
   /* Evitar saltos de página partidos en filas */
   tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
+  /* Ficha del Alumno en Impresión */
+  .student-sheet-card {
+    border: 1px solid #cbd5e1 !important;
+    padding: 22px !important;
+    margin-bottom: 22px !important;
+    border-radius: 6px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .student-data-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px 36px !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .student-data-row {
+    padding: 5px 0 !important;
+    border-bottom: 1px dashed #e2e8f0 !important;
+  }
+
+  .period-history-block {
+    border: 1px solid #cbd5e1 !important;
+    margin-bottom: 22px !important;
+    border-radius: 4px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .period-history-header {
+    padding: 9px 12px !important;
+    font-size: 10pt !important;
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  .period-history-footer {
+    padding: 9px 12px !important;
+    font-size: 9pt !important;
+    background-color: #f8fafc !important;
+    border-top: 1px solid #cbd5e1 !important;
+  }
+
+  /* Cuadro comparativo con márgenes propios */
   .comparative-card {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    margin-top: 14px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-top: 26px !important;
+    margin-bottom: 26px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+  }
+
+  .comparative-card-header {
+    padding: 10px 14px !important;
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid #cbd5e1 !important;
   }
 
   .report-footer-meta {
-    font-size: 8pt !important;
+    font-size: 8.5pt !important;
     color: #64748b !important;
-    border-top: 1px solid #e2e8f0;
-    margin-top: 12px;
-    padding-top: 6px;
+    border-top: 1px solid #cbd5e1 !important;
+    margin-top: 24px !important;
+    padding-top: 10px !important;
   }
 }
 
