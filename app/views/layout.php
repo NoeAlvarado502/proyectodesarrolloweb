@@ -23,42 +23,41 @@
 
       <div class="nav-label">General</div>
       <nav>
-        <a class="nav-link <?= isNavActive('alumnos') ? 'active' : '' ?>" href="<?= e(url('alumnos')) ?>">
+        <a class="nav-link <?= isNavActive('alumnos') ? 'active' : '' ?>" href="<?= e(url('alumnos')) ?>" title="Alumnos" aria-label="Alumnos">
           <?= icon('users', 'nav-icon') ?>
           <span>Alumnos</span>
         </a>
-        <a class="nav-link <?= isNavActive('carreras') ? 'active' : '' ?>" href="<?= e(url('carreras')) ?>">
+        <a class="nav-link <?= isNavActive('carreras') ? 'active' : '' ?>" href="<?= e(url('carreras')) ?>" title="Carreras" aria-label="Carreras">
           <?= icon('academic', 'nav-icon') ?>
           <span>Carreras</span>
         </a>
-        <a class="nav-link <?= isNavActive('cursos') ? 'active' : '' ?>" href="<?= e(url('cursos')) ?>">
+        <a class="nav-link <?= isNavActive('cursos') ? 'active' : '' ?>" href="<?= e(url('cursos')) ?>" title="Cursos" aria-label="Cursos">
           <?= icon('book', 'nav-icon') ?>
           <span>Cursos</span>
         </a>
-        <a class="nav-link <?= isNavActive('catedraticos') ? 'active' : '' ?>" href="<?= e(url('catedraticos')) ?>">
+        <a class="nav-link <?= isNavActive('catedraticos') ? 'active' : '' ?>" href="<?= e(url('catedraticos')) ?>" title="Catedráticos" aria-label="Catedráticos">
           <?= icon('user', 'nav-icon') ?>
           <span>Catedráticos</span>
         </a>
-        <a class="nav-link <?= isNavActive('periodos') ? 'active' : '' ?>" href="<?= e(url('periodos')) ?>">
+        <a class="nav-link <?= isNavActive('periodos') ? 'active' : '' ?>" href="<?= e(url('periodos')) ?>" title="Períodos" aria-label="Períodos">
           <?= icon('calendar', 'nav-icon') ?>
           <span>Períodos</span>
         </a>
-        <a class="nav-link <?= isNavActive('secciones') ? 'active' : '' ?>" href="<?= e(url('secciones')) ?>">
+        <a class="nav-link <?= isNavActive('secciones') ? 'active' : '' ?>" href="<?= e(url('secciones')) ?>" title="Secciones" aria-label="Secciones">
           <?= icon('grades', 'nav-icon') ?>
           <span>Secciones</span>
         </a>
 
-
         <div class="nav-label" style="margin-top: 14px;">Informes</div>
-        <a class="nav-link <?= isNavActive('reportes/alumnos') ? 'active' : '' ?>" href="<?= e(url('reportes/alumnos')) ?>">
+        <a class="nav-link <?= isNavActive('reportes/alumnos') ? 'active' : '' ?>" href="<?= e(url('reportes/alumnos')) ?>" title="Alumnos por carrera" aria-label="Alumnos por carrera">
           <?= icon('report-users', 'nav-icon') ?>
           <span>Alumnos por carrera</span>
         </a>
-        <a class="nav-link <?= isNavActive('reportes/notas') ? 'active' : '' ?>" href="<?= e(url('reportes/notas')) ?>">
+        <a class="nav-link <?= isNavActive('reportes/notas') ? 'active' : '' ?>" href="<?= e(url('reportes/notas')) ?>" title="Reporte de notas" aria-label="Reporte de notas">
           <?= icon('report-grades', 'nav-icon') ?>
           <span>Reporte de notas</span>
         </a>
-        <a class="nav-link <?= isNavActive('reportes/consulta-alumno') ? 'active' : '' ?>" href="<?= e(url('reportes/consulta-alumno')) ?>">
+        <a class="nav-link <?= isNavActive('reportes/consulta-alumno') ? 'active' : '' ?>" href="<?= e(url('reportes/consulta-alumno')) ?>" title="Consulta de alumno" aria-label="Consulta de alumno">
           <?= icon('user', 'nav-icon') ?>
           <span>Consulta de alumno</span>
         </a>

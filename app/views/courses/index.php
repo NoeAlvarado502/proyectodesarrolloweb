@@ -51,7 +51,7 @@
               <td data-label="Fecha de registro"><?= e(date('d/m/Y', strtotime($row['created_at']))) ?></td>
               <td data-label="Acciones" style="text-align: right;">
                 <div class="table-actions">
-                  <a class="button secondary small" href="<?= e(url('cursos/' . $row['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('cursos/' . $row['id'] . '/editar')) ?>" title="Editar curso" aria-label="Editar curso">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>

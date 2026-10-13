@@ -101,11 +101,11 @@
               </td>
               <td data-label="Acciones" style="text-align: right;">
                 <div class="table-actions">
-                  <a class="button secondary small" href="<?= e(url('secciones/' . $row['id'])) ?>">
+                  <a class="button secondary small" href="<?= e(url('secciones/' . $row['id'])) ?>" title="Ver alumnos inscritos" aria-label="Ver alumnos inscritos">
                     <?= icon('users') ?>
                     <span>Alumnos</span>
                   </a>
-                  <a class="button secondary small" href="<?= e(url('secciones/' . $row['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('secciones/' . $row['id'] . '/editar')) ?>" title="Editar sección" aria-label="Editar sección">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>

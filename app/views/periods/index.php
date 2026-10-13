@@ -63,27 +63,30 @@
                   <?php if ($row['status'] === 'activo'): ?>
                     <form method="post" action="<?= e(url('periodos/' . $row['id'] . '/cerrar')) ?>" data-confirm="¿Cerrar el período &quot;<?= e($row['name']) ?>&quot;? Esta acción bloqueará la edición de calificaciones y calculará el estado de los alumnos.">
                       <?= csrfField() ?>
-                      <button class="button secondary small" type="submit" title="Cerrar período">
+                      <button class="button secondary small" type="submit" title="Cerrar período" aria-label="Cerrar período">
+                        <?= icon('check') ?>
                         <span>Cerrar</span>
                       </button>
                     </form>
                   <?php elseif ($row['status'] === 'planificado'): ?>
                     <form method="post" action="<?= e(url('periodos/' . $row['id'] . '/activar')) ?>" data-confirm="¿Activar el período &quot;<?= e($row['name']) ?>&quot;? El período activo actual se cerrará automáticamente.">
                       <?= csrfField() ?>
-                      <button class="button secondary small" type="submit" title="Activar período">
+                      <button class="button secondary small" type="submit" title="Activar período" aria-label="Activar período">
+                        <?= icon('check') ?>
                         <span>Activar</span>
                       </button>
                     </form>
                   <?php elseif ($row['status'] === 'cerrado'): ?>
                     <form method="post" action="<?= e(url('periodos/' . $row['id'] . '/reabrir')) ?>" data-confirm="¿Reabrir el período &quot;<?= e($row['name']) ?>&quot; para correcciones extraordinarias?">
                       <?= csrfField() ?>
-                      <button class="button secondary small" type="submit" title="Reabrir período">
+                      <button class="button secondary small" type="submit" title="Reabrir período" aria-label="Reabrir período">
+                        <?= icon('refresh') ?>
                         <span>Reabrir</span>
                       </button>
                     </form>
                   <?php endif; ?>
 
-                  <a class="button secondary small" href="<?= e(url('periodos/' . $row['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('periodos/' . $row['id'] . '/editar')) ?>" title="Editar período" aria-label="Editar período">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>

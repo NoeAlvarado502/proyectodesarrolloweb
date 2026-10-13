@@ -48,7 +48,7 @@
               <td data-label="Nacimiento"><?= e(date('d/m/Y', strtotime($row['birth_date']))) ?></td>
               <td data-label="Expediente" class="muted">AC-<?= str_pad((string)$row['id'], 5, '0', STR_PAD_LEFT) ?></td>
               <td data-label="Acciones" style="text-align: right;">
-                <a class="row-action" href="<?= e(url('alumnos/' . $row['id'])) ?>">
+                <a class="row-action" href="<?= e(url('alumnos/' . $row['id'])) ?>" title="Abrir expediente" aria-label="Abrir expediente">
                   <span>Abrir</span>
                   <?= icon('arrow-right') ?>
                 </a>

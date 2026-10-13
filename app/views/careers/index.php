@@ -54,11 +54,11 @@
               </td>
               <td data-label="Acciones">
                 <div class="table-actions">
-                  <a class="button primary small" href="<?= e(url('carreras/' . $row['id'] . '/plan')) ?>" title="Editar plan de estudios por semestres">
+                  <a class="button primary small" href="<?= e(url('carreras/' . $row['id'] . '/plan')) ?>" title="Editar plan de estudios por semestres" aria-label="Plan de estudios">
                     <?= icon('book') ?>
                     <span>Plan de estudios</span>
                   </a>
-                  <a class="button secondary small" href="<?= e(url('carreras/' . $row['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('carreras/' . $row['id'] . '/editar')) ?>" title="Editar carrera" aria-label="Editar carrera">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>

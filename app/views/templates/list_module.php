@@ -50,7 +50,7 @@
               <td data-label="Fecha"><?= e($item['created_at'] ?? '—') ?></td>
               <td data-label="Acciones">
                 <div class="table-actions">
-                  <a class="button secondary small" href="<?= e(url('modulo/' . $item['id'] . '/editar')) ?>">
+                  <a class="button secondary small" href="<?= e(url('modulo/' . $item['id'] . '/editar')) ?>" title="Editar" aria-label="Editar">
                     <?= icon('edit') ?>
                     <span>Editar</span>
                   </a>

@@ -433,6 +433,11 @@ button, input, select, textarea {
   white-space: nowrap;
 }
 
+.table-actions form {
+  margin: 0;
+  display: inline-flex;
+}
+
 .table-actions .button.small {
   height: 29px;
   padding: 0 10px;
@@ -2171,8 +2176,55 @@ dialog.custom-modal::backdrop {
     padding: 9px 12px;
     font-size: 13px;
   }
+  /* ─── Acciones responsivas en paneles y tablas: Ocultar texto y dejar únicamente el icono ─── */
   .table-actions {
     gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+  .table-actions .button,
+  .panel .table-actions .button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+  }
+  .table-actions .button span,
+  .panel .table-actions .button span {
+    display: none !important;
+  }
+  .table-actions .button .icon,
+  .panel .table-actions .button .icon {
+    margin: 0;
+    width: 15px;
+    height: 15px;
+  }
+  .panel .row-action span,
+  .row-action span {
+    display: none !important;
+  }
+  .panel .row-action,
+  .row-action {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    transition: var(--transition);
+  }
+  .panel .row-action:hover,
+  .row-action:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-strong);
+    color: var(--brand-blue);
   }
   .filter-row {
     flex-direction: column;
