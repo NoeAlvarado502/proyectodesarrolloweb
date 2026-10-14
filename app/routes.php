@@ -123,7 +123,7 @@ Flight::route('POST /alumnos/guardar', function () {
         $stmt->execute([$first, $last, $birth, $photo, $career]);
         $newId = (string)db()->lastInsertId();
         flash('success', 'Alumno registrado correctamente.');
-        redirect('alumnos/' . $newId);
+        redirect('alumnos');
     } catch (Throwable $e) {
         $careers = db()->query('SELECT id,name FROM careers ORDER BY name')->fetchAll();
         render('students/form', ['student' => $_POST, 'careers' => $careers, 'errors' => [$e instanceof RuntimeException ? $e->getMessage() : 'No se pudo guardar el alumno.']]);
@@ -154,7 +154,7 @@ Flight::route('POST /alumnos/@id:[0-9]+/actualizar', function($id){
         $u = db()->prepare('UPDATE students SET first_name=?,last_name=?,birth_date=?,photo=?,career_id=? WHERE id=?');
         $u->execute([$first, $last, $birth, $photo, $career, $id]);
         flash('success', 'Información actualizada.');
-        redirect('alumnos/' . $id);
+        redirect('alumnos');
     } catch (Throwable $e) {
         $careers = db()->query('SELECT id,name FROM careers ORDER BY name')->fetchAll();
         render('students/form', ['student' => array_merge($old, $_POST), 'careers' => $careers, 'errors' => [$e instanceof RuntimeException ? $e->getMessage() : 'No se pudo actualizar el alumno.']]);
@@ -163,8 +163,7 @@ Flight::route('POST /alumnos/@id:[0-9]+/actualizar', function($id){
 Flight::route('POST /alumnos/@id:[0-9]+/eliminar', function($id){verifyCsrf();$q=db()->prepare('DELETE FROM students WHERE id=?');$q->execute([$id]);flash('success','Alumno eliminado.');redirect('alumnos');});
 
 Flight::route('GET /alumnos/@id:[0-9]+', function($id){
-    $q=db()->prepare('SELECT s.*,c.name career FROM students s JOIN careers c ON c.id=s.career_id WHERE s.id=?');$q->execute([$id]);$student=$q->fetch();if(!$student){http_response_code(404);render('errors/404');return;}
-    $q=db()->prepare('SELECT g.score,g.semester_id,g.section_id,g.course_id,se.name semester,sc.name section,co.name course FROM grades g JOIN semesters se ON se.id=g.semester_id JOIN sections sc ON sc.id=g.section_id JOIN courses co ON co.id=g.course_id WHERE g.student_id=? ORDER BY se.id,co.name');$q->execute([$id]);$grades=$q->fetchAll();render('students/show',compact('student','grades'));
+    redirect('reportes/consulta-alumno?id=' . (int)$id);
 });
 
 Flight::route('GET /cursos', function () {
