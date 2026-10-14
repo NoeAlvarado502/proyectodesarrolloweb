@@ -8,7 +8,7 @@ $title = $editing ? 'Editar catedrático' : 'Nuevo catedrático';
   'backText' => 'Volver'
 ]) ?>
 
-<form class="panel form-panel" method="post" action="<?= e(url($editing ? 'catedraticos/' . $professor['id'] . '/actualizar' : 'catedraticos/guardar')) ?>">
+<form class="panel form-panel" method="post" enctype="multipart/form-data" action="<?= e(url($editing ? 'catedraticos/' . $professor['id'] . '/actualizar' : 'catedraticos/guardar')) ?>">
   <?= csrfField() ?>
 
   <?= partial('components/form_errors', ['errors' => $errors ?? []]) ?>
@@ -68,6 +68,18 @@ $title = $editing ? 'Editar catedrático' : 'Nuevo catedrático';
              value="<?= e($professor['specialty'] ?? '') ?>" 
              placeholder="Ej. Ing. en Ciencias de la Computación, Maestría en Educación Superior"
              autocomplete="off">
+    </label>
+
+    <label class="full">
+      <span>Fotografía</span>
+      <div class="photo-upload">
+        <img class="preview-photo" src="<?= e(photoUrl($professor['photo'] ?? null)) ?>" alt="Vista previa">
+        <div style="flex: 1;">
+          <input type="file" name="photo" id="photo" accept="image/jpeg,image/png,image/webp" data-photo-preview>
+          <div id="photo-feedback" class="field-feedback"></div>
+          <small class="muted" style="display: block; margin-top: 4px; font-size: 12px;">Formatos admitidos: JPG, PNG o WEBP. Máximo 3 MB.</small>
+        </div>
+      </div>
     </label>
 
     <label class="full">

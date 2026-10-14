@@ -257,6 +257,7 @@ CREATE TABLE `professors` (
   `email` varchar(150) NOT NULL,
   `phone` varchar(50) DEFAULT NULL,
   `specialty` varchar(150) DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   `status` enum('activo','inactivo') NOT NULL DEFAULT 'activo',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),

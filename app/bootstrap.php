@@ -148,6 +148,20 @@ function ensureAuthTable(): void
     }
 }
 
+function ensureProfessorPhotoColumn(?PDO $pdo = null): void
+{
+    static $ensured = false;
+    if ($ensured) return;
+    $ensured = true;
+    try {
+        $pdo ??= db();
+        $cols = $pdo->query("SHOW COLUMNS FROM `professors` LIKE 'photo'")->fetchAll();
+        if (empty($cols)) {
+            $pdo->exec("ALTER TABLE `professors` ADD COLUMN `photo` VARCHAR(255) DEFAULT NULL AFTER `specialty`");
+        }
+    } catch (Throwable) {}
+}
+
 function verifyCsrf(): void
 {
     if (!hash_equals(csrfToken(), (string)($_POST['_token'] ?? ''))) {

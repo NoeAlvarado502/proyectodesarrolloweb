@@ -15,7 +15,11 @@ $canEnroll = (!$isPeriodClosed && !$isFull);
   <article class="stat-card">
     <div class="stat-header">
       <span class="stat-label">Docente</span>
-      <span class="stat-icon"><?= icon('user') ?></span>
+      <?php if (!empty($section['professor_photo'])): ?>
+        <img class="mini-photo" style="width: 32px; height: 32px;" src="<?= e(photoUrl($section['professor_photo'])) ?>" alt="Foto docente">
+      <?php else: ?>
+        <span class="stat-icon"><?= icon('user') ?></span>
+      <?php endif; ?>
     </div>
     <?php if (!empty($section['professor_id'])): ?>
       <strong style="font-size: 16px;">

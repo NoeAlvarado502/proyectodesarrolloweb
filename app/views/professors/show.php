@@ -27,9 +27,7 @@ $totalEnrolledActive = array_sum(array_column($activeSections, 'enrolled_count')
 <!-- Profile Card -->
 <div class="student-profile-panel">
   <div class="student-profile-left">
-    <div class="mini-avatar" style="width: 72px; height: 72px; font-size: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg-subtle); border: 2px solid var(--border);">
-      <?= icon('user', 'style="width: 36px; height: 36px;"') ?>
-    </div>
+    <img class="profile-photo-lg" src="<?= e(photoUrl($professor['photo'] ?? null)) ?>" alt="Foto de <?= $fullName ?>">
     <div class="profile-name-block">
       <h2><?= $fullName ?></h2>
       <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">

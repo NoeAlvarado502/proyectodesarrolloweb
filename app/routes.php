@@ -524,6 +524,7 @@ Flight::route('GET /secciones', function () {
     $sql = '
         SELECT cs.*, c.name as course_name, p.name as period_name, p.status as period_status,
                COALESCE(CONCAT(pr.first_name, " ", pr.last_name), cs.teacher, "") as teacher_display,
+               pr.photo as professor_photo,
                (SELECT COUNT(*) FROM section_enrollments se WHERE se.section_id = cs.id) as enrolled_count
         FROM course_sections cs
         JOIN courses c ON c.id = cs.course_id
@@ -773,10 +774,12 @@ Flight::route('POST /secciones/@id:[0-9]+/eliminar', function ($id) {
 Flight::route('GET /secciones/@id:[0-9]+', function ($id) {
     $pdo = db();
     $stmt = $pdo->prepare('
-        SELECT cs.*, c.name as course_name, p.name as period_name, p.status as period_status
+        SELECT cs.*, c.name as course_name, p.name as period_name, p.status as period_status,
+               pr.photo as professor_photo
         FROM course_sections cs
         JOIN courses c ON c.id = cs.course_id
         JOIN periods p ON p.id = cs.period_id
+        LEFT JOIN professors pr ON pr.id = cs.professor_id
         WHERE cs.id = ?
     ');
     $stmt->execute([(int)$id]);
@@ -1261,6 +1264,7 @@ Flight::route('GET /catedraticos/nuevo', function () {
 Flight::route('POST /catedraticos/guardar', function () {
     verifyCsrf();
     $pdo = db();
+    ensureProfessorPhotoColumn($pdo);
     $code = strtoupper(trim(preg_replace('/\s+/', ' ', postString('code'))));
     $firstName = trim(preg_replace('/\s+/', ' ', postString('first_name')));
     $lastName = trim(preg_replace('/\s+/', ' ', postString('last_name')));
@@ -1297,11 +1301,13 @@ Flight::route('POST /catedraticos/guardar', function () {
         return;
     }
 
+    $photo = uploadPhoto($_FILES['photo'] ?? null);
+
     $ins = $pdo->prepare('
-        INSERT INTO professors (code, first_name, last_name, document, email, phone, specialty, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO professors (code, first_name, last_name, document, email, phone, specialty, status, photo)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     ');
-    $ins->execute([$code, $firstName, $lastName, $document, $email, $phone, $specialty, $status]);
+    $ins->execute([$code, $firstName, $lastName, $document, $email, $phone, $specialty, $status, $photo]);
     flash('success', 'Catedrático registrado exitosamente.');
     redirect('catedraticos');
 });
@@ -1323,6 +1329,7 @@ Flight::route('GET /catedraticos/@id:[0-9]+/editar', function ($id) {
 Flight::route('POST /catedraticos/@id:[0-9]+/actualizar', function ($id) {
     verifyCsrf();
     $pdo = db();
+    ensureProfessorPhotoColumn($pdo);
     $stmt = $pdo->prepare('SELECT * FROM professors WHERE id = ?');
     $stmt->execute([(int)$id]);
     $current = $stmt->fetch();
@@ -1368,12 +1375,14 @@ Flight::route('POST /catedraticos/@id:[0-9]+/actualizar', function ($id) {
         return;
     }
 
+    $photo = uploadPhoto($_FILES['photo'] ?? null, $current['photo'] ?? null);
+
     $upd = $pdo->prepare('
         UPDATE professors
-        SET code = ?, first_name = ?, last_name = ?, document = ?, email = ?, phone = ?, specialty = ?, status = ?
+        SET code = ?, first_name = ?, last_name = ?, document = ?, email = ?, phone = ?, specialty = ?, status = ?, photo = ?
         WHERE id = ?
     ');
-    $upd->execute([$code, $firstName, $lastName, $document, $email, $phone, $specialty, $status, (int)$id]);
+    $upd->execute([$code, $firstName, $lastName, $document, $email, $phone, $specialty, $status, $photo, (int)$id]);
     flash('success', 'Información del catedrático actualizada.');
     redirect('catedraticos/' . $id);
 });
@@ -1446,8 +1455,21 @@ Flight::route('POST /catedraticos/@id:[0-9]+/eliminar', function ($id) {
         redirect('catedraticos');
     }
 
+    $pStmt = $pdo->prepare('SELECT photo FROM professors WHERE id = ?');
+    $pStmt->execute([(int)$id]);
+    $oldPhoto = $pStmt->fetchColumn();
+
     $del = $pdo->prepare('DELETE FROM professors WHERE id = ?');
     $del->execute([(int)$id]);
+
+    if ($oldPhoto) {
+        $uploadDir = ROOT_PATH . '/storage/uploads';
+        $file = $uploadDir . '/' . basename($oldPhoto);
+        if (is_file($file)) {
+            @unlink($file);
+        }
+    }
+
     flash('success', 'Catedrático eliminado exitosamente.');
     redirect('catedraticos');
 });

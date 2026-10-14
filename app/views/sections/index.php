@@ -75,11 +75,16 @@ $periodFilterHtml = ob_get_clean();
               <td data-label="Docente">
                 <?php $teacherName = $row['teacher_display'] ?: ($row['teacher'] ?: 'Por asignar'); ?>
                 <?php if (!empty($row['professor_id'])): ?>
-                  <a href="<?= e(url('catedraticos/' . $row['professor_id'])) ?>" style="color: inherit; text-decoration: none; font-weight: 500;">
-                    <?= e($teacherName) ?>
+                  <a href="<?= e(url('catedraticos/' . $row['professor_id'])) ?>" class="person-cell" style="color: inherit; text-decoration: none;">
+                    <?php if (!empty($row['professor_photo'])): ?>
+                      <img class="mini-photo" src="<?= e(photoUrl($row['professor_photo'])) ?>" alt="Foto de <?= e($teacherName) ?>">
+                    <?php else: ?>
+                      <span class="mini-avatar"><?= icon('user') ?></span>
+                    <?php endif; ?>
+                    <strong><?= e($teacherName) ?></strong>
                   </a>
                 <?php else: ?>
-                  <?= e($teacherName) ?>
+                  <span class="muted"><?= e($teacherName) ?></span>
                 <?php endif; ?>
               </td>
               <td data-label="Horario / Aula">

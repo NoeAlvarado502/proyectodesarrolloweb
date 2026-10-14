@@ -63,7 +63,11 @@ $statusFilterHtml = ob_get_clean();
               </td>
               <td data-label="Nombre">
                 <span class="person-cell">
-                  <span class="mini-avatar"><?= icon('user') ?></span>
+                  <?php if (!empty($p['photo'])): ?>
+                    <img class="mini-photo" src="<?= e(photoUrl($p['photo'])) ?>" alt="Foto de <?= e($p['first_name']) ?>">
+                  <?php else: ?>
+                    <span class="mini-avatar"><?= icon('user') ?></span>
+                  <?php endif; ?>
                   <div>
                     <a href="<?= e(url('catedraticos/' . $p['id'])) ?>" style="color: inherit; text-decoration: none; font-weight: 600;">
                       <?= e($p['first_name'] . ' ' . $p['last_name']) ?>
