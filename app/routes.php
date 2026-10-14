@@ -1568,26 +1568,10 @@ Flight::route('GET /reportes/consulta-alumno(/@id:[0-9]+)', function (?string $p
     $pdo = db();
     $selectedId = (int)($paramId ?: ($_GET['id'] ?? 0));
     $query = trim((string)($_GET['q'] ?? ''));
-
-    // Si viene consulta por texto y no se seleccionó ID explícito
-    if ($query !== '' && $selectedId === 0) {
-        $cleanQ = preg_replace('/^AC-0*/i', '', $query);
-        if (is_numeric($cleanQ)) {
-            $selectedId = (int)$cleanQ;
-        } else {
-            // Buscar coincidencia única o el primer resultado
-            $searchStmt = $pdo->prepare('
-                SELECT id 
-                FROM students 
-                WHERE CONCAT(first_name, " ", last_name) LIKE ? OR CONCAT(last_name, " ", first_name) LIKE ?
-                LIMIT 2
-            ');
-            $searchStmt->execute(['%' . $query . '%', '%' . $query . '%']);
-            $matchedIds = $searchStmt->fetchAll(PDO::FETCH_COLUMN);
-            if (count($matchedIds) === 1) {
-                $selectedId = (int)$matchedIds[0];
-            }
-        }
+    $careerId = (int)($_GET['career_id'] ?? 0);
+    $statusFilter = strtolower(trim((string)($_GET['status'] ?? 'todos')));
+    if ($statusFilter === 'todas' || $statusFilter === '') {
+        $statusFilter = 'todos';
     }
 
     $profile = null;
@@ -1595,28 +1579,61 @@ Flight::route('GET /reportes/consulta-alumno(/@id:[0-9]+)', function (?string $p
         $profile = getStudentAcademicProfile($selectedId, $pdo);
     }
 
-    // Listado rápido para el selector desplegable
-    if ($query !== '' && $selectedId === 0) {
-        $listStmt = $pdo->prepare('
-            SELECT s.id, s.first_name, s.last_name, c.name AS career_name
-            FROM students s
-            JOIN careers c ON c.id = s.career_id
-            WHERE CONCAT(s.first_name, " ", s.last_name) LIKE ? OR CONCAT(s.last_name, " ", s.first_name) LIKE ?
-            ORDER BY s.last_name ASC, s.first_name ASC
-            LIMIT 40
-        ');
-        $listStmt->execute(['%' . $query . '%', '%' . $query . '%']);
-        $studentList = $listStmt->fetchAll();
-    } else {
-        $studentList = $pdo->query('
-            SELECT s.id, s.first_name, s.last_name, c.name AS career_name
-            FROM students s
-            JOIN careers c ON c.id = s.career_id
-            ORDER BY s.last_name ASC, s.first_name ASC
-            LIMIT 50
-        ')->fetchAll();
+    // Catálogo de carreras para el filtro
+    $careers = $pdo->query('SELECT id, name FROM careers ORDER BY name ASC')->fetchAll();
+
+    // Consulta de alumnos con filtros aplicados (búsqueda, carrera, estado)
+    $sql = '
+        SELECT s.id, s.first_name, s.last_name, s.birth_date, s.photo, s.career_id, s.created_at,
+               c.name AS career_name
+        FROM students s
+        JOIN careers c ON c.id = s.career_id
+        WHERE 1=1
+    ';
+    $params = [];
+
+    if ($careerId > 0) {
+        $sql .= ' AND s.career_id = ?';
+        $params[] = $careerId;
     }
 
-    render('reports/student_lookup', compact('profile', 'query', 'selectedId', 'studentList'));
+    if ($query !== '') {
+        $cleanQ = preg_replace('/^AC-0*/i', '', $query);
+        if (is_numeric($cleanQ)) {
+            $sql .= ' AND (s.id = ? OR CONCAT(s.first_name, " ", s.last_name) LIKE ? OR CONCAT(s.last_name, " ", s.first_name) LIKE ?)';
+            $params[] = (int)$cleanQ;
+            $params[] = '%' . $query . '%';
+            $params[] = '%' . $query . '%';
+        } else {
+            $sql .= ' AND (CONCAT(s.first_name, " ", s.last_name) LIKE ? OR CONCAT(s.last_name, " ", s.first_name) LIKE ?)';
+            $params[] = '%' . $query . '%';
+            $params[] = '%' . $query . '%';
+        }
+    }
+
+    $sql .= ' ORDER BY c.name ASC, s.last_name ASC, s.first_name ASC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $rawStudents = $stmt->fetchAll();
+
+    $studentList = [];
+    foreach ($rawStudents as $st) {
+        $prog = calculateStudentAcademicProgress((int)$st['id'], (int)$st['career_id'], $pdo);
+        $stStatus = $prog['status'];
+
+        if ($statusFilter !== 'todos' && $stStatus !== $statusFilter) {
+            continue;
+        }
+
+        $st['status'] = $stStatus;
+        $st['code'] = 'AC-' . str_pad((string)$st['id'], 5, '0', STR_PAD_LEFT);
+        $st['full_name'] = trim($st['first_name'] . ' ' . $st['last_name']);
+        $st['approved_count'] = $prog['approved_count'];
+        $st['total_mandatory'] = $prog['total_mandatory'];
+        $st['current_semester_label'] = $prog['current_semester_label'];
+        $studentList[] = $st;
+    }
+
+    render('reports/student_lookup', compact('profile', 'query', 'selectedId', 'studentList', 'careers', 'careerId', 'statusFilter'));
 });
 

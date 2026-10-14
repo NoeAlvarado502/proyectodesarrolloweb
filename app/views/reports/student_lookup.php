@@ -2,6 +2,12 @@
 declare(strict_types=1);
 
 $generatedDate = date('d/m/Y H:i');
+$careerId = (int)($careerId ?? 0);
+$statusFilter = (string)($statusFilter ?? 'todos');
+$query = (string)($query ?? '');
+$selectedId = (int)($selectedId ?? 0);
+$studentList = $studentList ?? [];
+$careers = $careers ?? [];
 ?>
 <div class="report-container">
 
@@ -19,9 +25,24 @@ $generatedDate = date('d/m/Y H:i');
 
   <!-- Barra Superior en Pantalla -->
   <div class="report-header-row no-print">
-    <h1>Ficha del Alumno</h1>
+    <div>
+      <h1>Ficha del Alumno</h1>
+      <?php if ($profile): ?>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 3px;">
+          Expediente académico de <strong><?= e($profile['student']['full_name']) ?></strong> (<?= e($profile['student']['code']) ?>)
+        </div>
+      <?php else: ?>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 3px;">
+          Expediente académico y consulta de estudiantes
+        </div>
+      <?php endif; ?>
+    </div>
     <div class="report-actions">
       <?php if ($profile): ?>
+        <a class="btn-report-export" href="<?= e(url('reportes/consulta-alumno' . ($careerId > 0 || $statusFilter !== 'todos' || $query !== '' ? '?' . http_build_query(array_filter(['career_id' => $careerId ?: null, 'status' => $statusFilter !== 'todos' ? $statusFilter : null, 'q' => $query ?: null])) : ''))) ?>" title="Volver al listado de alumnos">
+          <?= icon('arrow-left') ?>
+          <span>Volver al listado</span>
+        </a>
         <button class="btn-report-export" onclick="window.print()" title="Imprimir constancia o guardar como PDF">
           <?= icon('print') ?>
           <span>Imprimir / PDF</span>
@@ -30,58 +51,138 @@ $generatedDate = date('d/m/Y H:i');
     </div>
   </div>
 
-  <!-- Buscador Superior y Selector Rápido (Ocultos en impresión) -->
+  <!-- Barra de Filtros: Input de búsqueda al lado de Filtros de Carrera y Estado (Ocultos en impresión) -->
   <div class="report-filters-card no-print">
-    <form class="report-filters-form" method="get" action="<?= e(url('reportes/consulta-alumno')) ?>">
-      <div class="report-filter-item" style="flex:2;">
-        <label for="search-student">Buscar</label>
+    <form class="report-filters-form" method="get" action="<?= e(url('reportes/consulta-alumno')) ?>" style="align-items: center;">
+      <!-- Input de búsqueda (únicamente el input) -->
+      <div class="report-filter-item" style="flex: 2; min-width: 220px;">
         <?= partial('components/search_box', [
-          'action' => url('reportes/consulta-alumno'),
+          'action' => url('reportes/consulta-alumno' . ($careerId > 0 || $statusFilter !== 'todos' ? '?' . http_build_query(array_filter(['career_id' => $careerId ?: null, 'status' => $statusFilter !== 'todos' ? $statusFilter : null])) : '')),
           'query' => $query,
           'name' => 'q',
           'placeholder' => 'Buscar',
           'id' => 'search-student'
         ]) ?>
       </div>
-      <div class="report-filter-buttons">
-        <button type="submit" class="button primary">
-          <?= icon('search') ?>
-          <span>Buscar</span>
-        </button>
-        <?php if ($query !== '' || $selectedId > 0): ?>
-          <a class="button secondary" href="<?= e(url('reportes/consulta-alumno')) ?>">
-            <?= icon('x') ?>
-            <span>Limpiar</span>
-          </a>
-        <?php endif; ?>
-      </div>
-    </form>
 
-    <?php if (!empty($studentList)): ?>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <span class="report-filter-label" style="margin:0;">Selección rápida:</span>
-        <div style="flex:1;max-width:440px;">
-          <select class="custom-select filter-select" data-icon="filter" onchange="if(this.value) window.location.href='<?= e(url('reportes/consulta-alumno?id=')) ?>' + this.value">
-            <option value="">-- Seleccionar de la lista (<?= count($studentList) ?> alumnos) --</option>
-            <?php foreach ($studentList as $s): ?>
-              <option value="<?= e($s['id']) ?>" <?= ($selectedId === (int)$s['id']) ? 'selected' : '' ?>>
-                <?= e($s['last_name'] . ', ' . $s['first_name']) ?> (AC-<?= str_pad((string)$s['id'], 5, '0', STR_PAD_LEFT) ?>) — <?= e($s['career_name']) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
+      <!-- Filtro Carrera al lado del input de búsqueda -->
+      <div class="report-filter-item" style="flex: 1.5; min-width: 190px;">
+        <select name="career_id" id="f-career" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()" aria-label="Filtrar por carrera">
+          <option value="0">Todas las carreras</option>
+          <?php foreach ($careers as $c): ?>
+            <option value="<?= e($c['id']) ?>" <?= ((int)$c['id'] === $careerId) ? 'selected' : '' ?>>
+              <?= e($c['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
       </div>
-    <?php endif; ?>
+
+      <!-- Filtro Estado al lado de carrera -->
+      <div class="report-filter-item compact" style="min-width: 140px;">
+        <select name="status" id="f-status" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()" aria-label="Filtrar por estado">
+          <option value="todos" <?= ($statusFilter === 'todos') ? 'selected' : '' ?>>Todos los estados</option>
+          <option value="activo" <?= ($statusFilter === 'activo') ? 'selected' : '' ?>>Activo</option>
+          <option value="inactivo" <?= ($statusFilter === 'inactivo') ? 'selected' : '' ?>>Inactivo</option>
+          <option value="graduado" <?= ($statusFilter === 'graduado') ? 'selected' : '' ?>>Graduado</option>
+          <option value="retirado" <?= ($statusFilter === 'retirado') ? 'selected' : '' ?>>Retirado</option>
+        </select>
+      </div>
+
+      <!-- Botón para limpiar filtros si hay alguno activo -->
+      <?php if ($query !== '' || $careerId > 0 || ($statusFilter !== 'todos' && $statusFilter !== '')): ?>
+        <div class="report-filter-buttons" style="margin-left: auto;">
+          <a class="button secondary small" href="<?= e(url('reportes/consulta-alumno')) ?>" title="Restablecer filtros">
+            <?= icon('x') ?>
+            <span>Limpiar filtros</span>
+          </a>
+        </div>
+      <?php endif; ?>
+    </form>
   </div>
 
   <?php if (!$profile): ?>
-    <div class="panel" style="padding:40px 20px;text-align:center;">
-      <?php if ($query !== '' || $selectedId > 0): ?>
-        <p style="margin:0;font-size:15px;color:var(--text-secondary);font-weight:600;">No se encontró ningún alumno con los criterios ingresados.</p>
-        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Verifique el código o los nombres e intente nuevamente.</p>
+    <div class="panel" style="margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;">
+      <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface);">
+        <div>
+          <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary);">
+            Listado de Alumnos
+          </h3>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+            <?= count($studentList) ?> <?= count($studentList) === 1 ? 'alumno encontrado' : 'alumnos encontrados' ?>
+            <?php if ($query !== '' || $careerId > 0 || ($statusFilter !== 'todos' && $statusFilter !== '')): ?>
+              · con los filtros aplicados
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+
+      <?php if (empty($studentList)): ?>
+        <div style="padding: 40px 20px; text-align: center; color: var(--text-muted);">
+          <p style="margin: 0; font-size: 15px; font-weight: 600; color: var(--text-secondary);">No se encontró ningún alumno con los criterios ingresados.</p>
+          <p style="margin: 6px 0 0; font-size: 13px;">Verifique los filtros o el término de búsqueda e intente nuevamente.</p>
+          <div style="margin-top: 14px;">
+            <a class="button secondary small" href="<?= e(url('reportes/consulta-alumno')) ?>">
+              <?= icon('x') ?>
+              <span>Limpiar filtros</span>
+            </a>
+          </div>
+        </div>
       <?php else: ?>
-        <p style="margin:0;font-size:15px;color:var(--text-secondary);font-weight:600;">Ingrese un carné o nombre en el buscador superior para consultar su expediente académico.</p>
-        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">También puede seleccionar un alumno directamente desde el listado rápido.</p>
+        <div class="table-wrap" style="margin: 0; border: none;">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th class="text-left" style="width: 120px;">Carné</th>
+                <th class="text-left">Estudiante</th>
+                <th class="text-left">Carrera</th>
+                <th class="text-left" style="width: 130px;">Estado</th>
+                <th class="text-right" style="width: 170px;">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($studentList as $s): ?>
+                <tr>
+                  <td class="text-left code-cell">
+                    <strong><?= e($s['code']) ?></strong>
+                  </td>
+                  <td class="text-left">
+                    <span class="person-cell">
+                      <?php if (!empty($s['photo'])): ?>
+                        <img class="mini-photo" src="<?= e(photoUrl($s['photo'])) ?>" alt="Foto de <?= e($s['full_name']) ?>">
+                      <?php else: ?>
+                        <span class="mini-avatar"><?= icon('user') ?></span>
+                      <?php endif; ?>
+                      <strong><?= e($s['full_name']) ?></strong>
+                    </span>
+                  </td>
+                  <td class="text-left">
+                    <?= e($s['career_name']) ?>
+                  </td>
+                  <td class="text-left">
+                    <?php
+                      $badgeClass = match($s['status']) {
+                        'activo' => 'badge-green',
+                        'inactivo' => 'badge-neutral',
+                        'graduado' => 'badge-blue',
+                        'retirado' => 'badge-red',
+                        default => 'badge-neutral'
+                      };
+                    ?>
+                    <span class="status-badge <?= $badgeClass ?>" style="text-transform: capitalize;">
+                      <?= e($s['status']) ?>
+                    </span>
+                  </td>
+                  <td class="text-right" style="white-space: nowrap;">
+                    <a class="button primary small" href="<?= e(url('reportes/consulta-alumno?id=' . $s['id'] . ($careerId > 0 ? '&career_id=' . $careerId : '') . ($statusFilter !== 'todos' ? '&status=' . $statusFilter : '') . ($query !== '' ? '&q=' . urlencode($query) : ''))) ?>" title="Consultar expediente de <?= e($s['full_name']) ?>">
+                      <?= icon('file-text') ?>
+                      <span>Ver expediente</span>
+                    </a>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
       <?php endif; ?>
     </div>
   <?php else: ?>
