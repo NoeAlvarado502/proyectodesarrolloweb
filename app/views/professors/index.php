@@ -1,10 +1,21 @@
+<?php
+ob_start(); ?>
+<select name="status" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()" aria-label="Filtrar por estado">
+  <option value="" <?= ($statusFilter === '') ? 'selected' : '' ?>>Todos los estados</option>
+  <option value="activo" <?= ($statusFilter === 'activo') ? 'selected' : '' ?>>Activos</option>
+  <option value="inactivo" <?= ($statusFilter === 'inactivo') ? 'selected' : '' ?>>Inactivos</option>
+</select>
+<?php
+$statusFilterHtml = ob_get_clean();
+?>
 <?= partial('components/page_header', [
   'title' => 'Catedráticos',
   'search' => [
-    'action' => url('catedraticos'),
+    'action' => url('catedraticos' . ($statusFilter !== '' ? '?status=' . $statusFilter : '')),
     'query' => $query,
-    'placeholder' => 'Buscar catedrático por nombre o código',
-    'filter' => 'text'
+    'placeholder' => 'Buscar',
+    'filter' => 'text',
+    'filter_select' => $statusFilterHtml
   ],
   'action' => [
     'url' => url('catedraticos/nuevo'),
@@ -15,21 +26,6 @@
 
 <div class="panel">
   <div class="toolbar" style="border-bottom: 1px solid var(--border-subtle); padding: 12px 20px;">
-    <div style="display: flex; gap: 8px;">
-      <a href="<?= e(url('catedraticos' . ($query !== '' ? '?q=' . urlencode($query) : ''))) ?>" 
-         class="button <?= $statusFilter === '' ? 'primary' : 'secondary' ?> small">
-        Todos
-      </a>
-      <a href="<?= e(url('catedraticos?status=activo' . ($query !== '' ? '&q=' . urlencode($query) : ''))) ?>" 
-         class="button <?= $statusFilter === 'activo' ? 'primary' : 'secondary' ?> small">
-        Activos
-      </a>
-      <a href="<?= e(url('catedraticos?status=inactivo' . ($query !== '' ? '&q=' . urlencode($query) : ''))) ?>" 
-         class="button <?= $statusFilter === 'inactivo' ? 'primary' : 'secondary' ?> small">
-        Inactivos
-      </a>
-    </div>
-
     <div class="toolbar-count">
       <?= count($professors) ?> <?= count($professors) === 1 ? 'catedrático registrado' : 'catedráticos registrados' ?>
     </div>

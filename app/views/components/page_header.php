@@ -36,25 +36,23 @@ $extraActions = $extraActions ?? '';
         $searchFilter = is_array($search) ? ($search['filter'] ?? 'alpha-search') : 'alpha-search';
         $searchPattern = is_array($search) ? ($search['pattern'] ?? "[A-Za-zÁÉÍÓÚáéíóúÑñÜü\\s'\\-]*") : "[A-Za-zÁÉÍÓÚáéíóúÑñÜü\\s'\\-]*";
         $searchName = is_array($search) ? ($search['name'] ?? 'q') : 'q';
+        $filterSelect = is_array($search) ? ($search['filter_select'] ?? null) : null;
+        $formBaseAction = explode('?', $searchAction)[0];
         ?>
-        <form class="heading-search" method="get" action="<?= e($searchAction) ?>">
-          <div class="searchbox">
-            <button type="submit" class="searchbox-btn" title="Buscar" aria-label="Buscar">
-              <?= icon('search') ?>
-            </button>
-            <input name="<?= e($searchName) ?>" 
-                   value="<?= e($searchQuery) ?>" 
-                   placeholder="<?= e($searchPlaceholder) ?>"
-                   data-filter="<?= e($searchFilter) ?>"
-                   pattern="<?= e($searchPattern) ?>"
-                   maxlength="100"
-                   autocomplete="off">
-            <?php if ($searchQuery !== ''): ?>
-              <a class="searchbox-clear" href="<?= e($searchAction) ?>" title="Limpiar búsqueda" aria-label="Limpiar">
-                <?= icon('close') ?>
-              </a>
-            <?php endif; ?>
-          </div>
+        <form class="heading-search" method="get" action="<?= e($formBaseAction) ?>">
+          <?= partial('components/search_box', [
+            'action' => $searchAction,
+            'query' => $searchQuery,
+            'name' => $searchName,
+            'placeholder' => 'Buscar',
+            'filter' => $searchFilter,
+            'pattern' => $searchPattern
+          ]) ?>
+          <?php if (!empty($filterSelect)): ?>
+            <div class="heading-filter-select">
+              <?= $filterSelect ?>
+            </div>
+          <?php endif; ?>
         </form>
       <?php endif; ?>
 

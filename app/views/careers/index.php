@@ -3,7 +3,7 @@
   'search' => [
     'action' => url('carreras'),
     'query' => $query,
-    'placeholder' => 'Buscar carrera',
+    'placeholder' => 'Buscar',
     'filter' => 'text'
   ],
   'action' => [

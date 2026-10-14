@@ -34,20 +34,14 @@ $generatedDate = date('d/m/Y H:i');
   <div class="report-filters-card no-print">
     <form class="report-filters-form" method="get" action="<?= e(url('reportes/consulta-alumno')) ?>">
       <div class="report-filter-item" style="flex:2;">
-        <label for="search-student">Buscar alumno</label>
-        <div style="position:relative;display:flex;align-items:center;">
-          <input 
-            type="text" 
-            id="search-student"
-            name="q" 
-            value="<?= e($query) ?>" 
-            placeholder="Ingrese carné (ej. AC-00001) o apellidos / nombres..."
-            autocomplete="off"
-            style="width:100%;padding-right:32px;">
-          <span style="position:absolute;right:10px;color:var(--text-muted);pointer-events:none;">
-            <?= icon('search') ?>
-          </span>
-        </div>
+        <label for="search-student">Buscar</label>
+        <?= partial('components/search_box', [
+          'action' => url('reportes/consulta-alumno'),
+          'query' => $query,
+          'name' => 'q',
+          'placeholder' => 'Buscar',
+          'id' => 'search-student'
+        ]) ?>
       </div>
       <div class="report-filter-buttons">
         <button type="submit" class="button primary">
@@ -66,14 +60,16 @@ $generatedDate = date('d/m/Y H:i');
     <?php if (!empty($studentList)): ?>
       <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <span class="report-filter-label" style="margin:0;">Selección rápida:</span>
-        <select onchange="if(this.value) window.location.href='<?= e(url('reportes/consulta-alumno?id=')) ?>' + this.value" style="max-width:440px;height:34px;font-size:13px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);">
-          <option value="">-- Seleccionar de la lista (<?= count($studentList) ?> alumnos) --</option>
-          <?php foreach ($studentList as $s): ?>
-            <option value="<?= e($s['id']) ?>" <?= ($selectedId === (int)$s['id']) ? 'selected' : '' ?>>
-              <?= e($s['last_name'] . ', ' . $s['first_name']) ?> (AC-<?= str_pad((string)$s['id'], 5, '0', STR_PAD_LEFT) ?>) — <?= e($s['career_name']) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
+        <div style="flex:1;max-width:440px;">
+          <select class="custom-select filter-select" data-icon="filter" onchange="if(this.value) window.location.href='<?= e(url('reportes/consulta-alumno?id=')) ?>' + this.value">
+            <option value="">-- Seleccionar de la lista (<?= count($studentList) ?> alumnos) --</option>
+            <?php foreach ($studentList as $s): ?>
+              <option value="<?= e($s['id']) ?>" <?= ($selectedId === (int)$s['id']) ? 'selected' : '' ?>>
+                <?= e($s['last_name'] . ', ' . $s['first_name']) ?> (AC-<?= str_pad((string)$s['id'], 5, '0', STR_PAD_LEFT) ?>) — <?= e($s['career_name']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
       </div>
     <?php endif; ?>
   </div>

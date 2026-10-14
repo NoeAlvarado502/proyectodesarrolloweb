@@ -3,7 +3,7 @@
   'search' => [
     'action' => url('periodos'),
     'query' => $query,
-    'placeholder' => 'Buscar período',
+    'placeholder' => 'Buscar',
     'filter' => 'text'
   ],
   'action' => [

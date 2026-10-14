@@ -54,7 +54,7 @@ $excelUrl = url('reportes/alumnos?' . http_build_query([
       <!-- Carrera -->
       <div class="report-filter-item">
         <label for="f-career">Carrera</label>
-        <select name="career_id" id="f-career">
+        <select name="career_id" id="f-career" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()">
           <option value="0">Todas las carreras</option>
           <?php foreach ($careers as $c): ?>
             <option value="<?= e($c['id']) ?>" <?= ((int)$c['id'] === $selectedCareerId) ? 'selected' : '' ?>>
@@ -67,7 +67,7 @@ $excelUrl = url('reportes/alumnos?' . http_build_query([
       <!-- Estado -->
       <div class="report-filter-item compact">
         <label for="f-status">Estado</label>
-        <select name="status" id="f-status">
+        <select name="status" id="f-status" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()">
           <option value="todas" <?= ($selectedStatus === 'todas') ? 'selected' : '' ?>>Todos</option>
           <option value="activo" <?= ($selectedStatus === 'activo') ? 'selected' : '' ?>>Activo</option>
           <option value="inactivo" <?= ($selectedStatus === 'inactivo') ? 'selected' : '' ?>>Inactivo</option>
@@ -78,28 +78,25 @@ $excelUrl = url('reportes/alumnos?' . http_build_query([
 
       <!-- Búsqueda -->
       <div class="report-filter-item" style="flex:2;">
-        <label for="f-q">Búsqueda por nombre o código</label>
-        <input 
-          type="text" 
-          id="f-q"
-          name="q" 
-          value="<?= e($searchQuery) ?>" 
-          placeholder="Código carné (ej. AC-00001) o apellido / nombre...">
+        <label for="f-q">Buscar</label>
+        <?= partial('components/search_box', [
+          'action' => url('reportes/alumnos' . ($selectedCareerId > 0 ? '?career_id=' . $selectedCareerId : '')),
+          'query' => $searchQuery,
+          'name' => 'q',
+          'placeholder' => 'Buscar',
+          'id' => 'f-q'
+        ]) ?>
       </div>
 
       <!-- Botones -->
-      <div class="report-filter-buttons">
-        <button type="submit" class="button primary">
-          <?= icon('filter') ?>
-          <span>Aplicar</span>
-        </button>
-        <?php if ($selectedCareerId > 0 || $selectedStatus !== 'todas' || $searchQuery !== ''): ?>
+      <?php if ($selectedCareerId > 0 || $selectedStatus !== 'todas' || $searchQuery !== ''): ?>
+        <div class="report-filter-buttons">
           <a class="button secondary" href="<?= e(url('reportes/alumnos')) ?>">
             <?= icon('x') ?>
             <span>Limpiar</span>
           </a>
-        <?php endif; ?>
-      </div>
+        </div>
+      <?php endif; ?>
     </form>
   </div>
 

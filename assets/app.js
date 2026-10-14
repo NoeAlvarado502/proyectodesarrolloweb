@@ -442,5 +442,242 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // 12. Componente de Desplegables Personalizados (Custom Select Dropdown)
+  function initCustomSelects() {
+    const selects = document.querySelectorAll('select.custom-select, select.filter-select, .report-filter-item select, .heading-filter-select select, select[data-custom-select]');
+    selects.forEach(select => {
+      if (select.dataset.customized === 'true') return;
+      select.dataset.customized = 'true';
+
+      const isFilter = (select.classList.contains('filter-select') ||
+                        select.dataset.icon === 'filter' ||
+                        select.closest('.report-filter-item, .heading-filter-select, .filter-bar') !== null ||
+                        ['period_id', 'career_id', 'course_id', 'section_id', 'status'].includes(select.name)) &&
+                       !select.closest('.form-panel');
+
+      const container = document.createElement('div');
+      container.className = 'custom-select-container';
+      if (isFilter) container.classList.add('is-filter-dropdown');
+      if (select.disabled) container.classList.add('is-disabled');
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'custom-select-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      if (isFilter) {
+        const filterIcon = document.createElement('span');
+        filterIcon.className = 'custom-select-filter-icon';
+        filterIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>';
+        trigger.appendChild(filterIcon);
+      }
+
+      const label = document.createElement('span');
+      label.className = 'custom-select-label';
+
+      const arrow = document.createElement('span');
+      arrow.className = 'custom-select-arrow';
+      arrow.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+      trigger.appendChild(label);
+      trigger.appendChild(arrow);
+      container.appendChild(trigger);
+
+      const dropdown = document.createElement('div');
+      dropdown.className = 'custom-select-dropdown';
+      dropdown.setAttribute('role', 'listbox');
+
+      // Si tiene más de 6 opciones, añadir buscador interno
+      const optionsCount = select.options.length;
+      let searchInput = null;
+      if (optionsCount > 6) {
+        const searchBox = document.createElement('div');
+        searchBox.className = 'custom-select-search';
+        searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Buscar opción...';
+        searchInput.autocomplete = 'off';
+        searchBox.appendChild(searchInput);
+        dropdown.appendChild(searchBox);
+      }
+
+      const optionsList = document.createElement('div');
+      optionsList.className = 'custom-select-options-list';
+      dropdown.appendChild(optionsList);
+      container.appendChild(dropdown);
+
+      // Reemplazar posición del select en el DOM
+      select.parentNode.insertBefore(container, select);
+      select.classList.add('custom-select-native');
+      container.appendChild(select);
+
+      let focusedIndex = -1;
+
+      function renderOptions(filterText = '') {
+        optionsList.innerHTML = '';
+        const filter = filterText.toLowerCase().trim();
+        let matchCount = 0;
+        focusedIndex = -1;
+
+        Array.from(select.options).forEach((opt, idx) => {
+          const text = opt.text;
+          const val = opt.value;
+          const isSelected = opt.selected;
+
+          if (filter !== '' && !text.toLowerCase().includes(filter)) {
+            return;
+          }
+          matchCount++;
+
+          const optEl = document.createElement('div');
+          optEl.className = 'custom-select-option' + (isSelected ? ' is-selected' : '');
+          optEl.setAttribute('role', 'option');
+          optEl.setAttribute('data-value', val);
+          optEl.setAttribute('data-index', idx);
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'custom-select-option-text';
+          textSpan.textContent = text;
+
+          const checkIcon = document.createElement('span');
+          checkIcon.className = 'custom-select-check';
+          checkIcon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+          optEl.appendChild(textSpan);
+          optEl.appendChild(checkIcon);
+
+          optEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectOption(val, text);
+            closeDropdown();
+          });
+
+          optionsList.appendChild(optEl);
+        });
+
+        if (matchCount === 0) {
+          const emptyEl = document.createElement('div');
+          emptyEl.className = 'custom-select-empty';
+          emptyEl.textContent = 'Sin resultados';
+          optionsList.appendChild(emptyEl);
+        }
+      }
+
+      function updateSelectedDisplay() {
+        const selectedOpt = select.selectedOptions[0] || select.options[0];
+        label.textContent = selectedOpt ? selectedOpt.text : 'Seleccionar...';
+        renderOptions(searchInput ? searchInput.value : '');
+      }
+
+      function selectOption(val, text) {
+        if (select.value === val) return;
+        select.value = val;
+        label.textContent = text;
+
+        // Disparar eventos de cambio nativos
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Ejecutar manejador inline onchange si existe
+        if (typeof select.onchange === 'function') {
+          select.onchange.call(select);
+        } else if (select.hasAttribute('onchange')) {
+          try {
+            new Function(select.getAttribute('onchange')).call(select);
+          } catch (e) {
+            console.error(e);
+          }
+        } else if (isFilter && select.form) {
+          select.form.submit();
+        }
+      }
+
+      function openDropdown() {
+        // Cerrar cualquier otro custom select abierto
+        document.querySelectorAll('.custom-select-container.is-open').forEach(c => {
+          if (c !== container) c.classList.remove('is-open');
+        });
+        container.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        if (searchInput) {
+          searchInput.value = '';
+          renderOptions();
+          setTimeout(() => searchInput.focus(), 50);
+        } else {
+          renderOptions();
+        }
+      }
+
+      function closeDropdown() {
+        container.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      }
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (container.classList.contains('is-open')) {
+          closeDropdown();
+        } else {
+          openDropdown();
+        }
+      });
+
+      if (searchInput) {
+        searchInput.addEventListener('click', (e) => e.stopPropagation());
+        searchInput.addEventListener('input', () => {
+          renderOptions(searchInput.value);
+        });
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeDropdown();
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstOption = optionsList.querySelector('.custom-select-option');
+            if (firstOption) {
+              const val = firstOption.getAttribute('data-value');
+              const txt = firstOption.querySelector('.custom-select-option-text').textContent;
+              selectOption(val, txt);
+              closeDropdown();
+            }
+          }
+        });
+      }
+
+      container.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && container.classList.contains('is-open')) {
+          closeDropdown();
+        }
+      });
+
+      // Escuchar cambios externos en el select
+      select.addEventListener('change', () => {
+        const selectedOpt = select.selectedOptions[0];
+        if (selectedOpt) {
+          label.textContent = selectedOpt.text;
+        }
+      });
+
+      updateSelectedDisplay();
+    });
+  }
+
+  // Cerrar todos los custom selects al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-container')) {
+      document.querySelectorAll('.custom-select-container.is-open').forEach(c => {
+        c.classList.remove('is-open');
+        const trig = c.querySelector('.custom-select-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  // Inicializar desplegables personalizados
+  initCustomSelects();
+  window.initCustomSelects = initCustomSelects;
 });
+
 

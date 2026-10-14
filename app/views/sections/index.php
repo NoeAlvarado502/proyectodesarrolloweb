@@ -1,36 +1,37 @@
+<?php
+ob_start(); ?>
+<select name="period_id" class="custom-select filter-select" data-icon="filter" onchange="this.form.submit()" aria-label="Filtrar por período académico">
+  <option value="all" <?= ($selectedPeriod === 'all' || $selectedPeriod === '') ? 'selected' : '' ?>>Todos los períodos</option>
+  <?php foreach ($periods as $p): ?>
+    <option value="<?= e($p['id']) ?>" <?= ((string)$selectedPeriod === (string)$p['id']) ? 'selected' : '' ?>>
+      <?= e($p['name']) ?> (<?= ucfirst($p['status']) ?>)
+    </option>
+  <?php endforeach; ?>
+</select>
+<?php
+$periodFilterHtml = ob_get_clean();
+?>
 <?= partial('components/page_header', [
   'title' => 'Secciones',
   'search' => [
-    'action' => url('secciones'),
+    'action' => url('secciones' . ($selectedPeriod !== '' && $selectedPeriod !== 'all' ? '?period_id=' . $selectedPeriod : '')),
     'query' => $query,
-    'placeholder' => 'Buscar curso o docente',
-    'filter' => 'text'
+    'placeholder' => 'Buscar',
+    'filter' => 'text',
+    'filter_select' => $periodFilterHtml
   ],
   'action' => [
-    'url' => url('secciones/nueva' . ($selectedPeriod ? '?period_id=' . $selectedPeriod : '')),
+    'url' => url('secciones/nueva' . ($selectedPeriod && $selectedPeriod !== 'all' ? '?period_id=' . $selectedPeriod : '')),
     'text' => 'Agregar',
     'icon' => 'plus'
   ]
 ]) ?>
 
 <div class="panel">
-  <div class="filter-bar" style="border-bottom: 1px solid var(--border); padding: 16px 20px;">
-    <form method="get" action="<?= e(url('secciones')) ?>" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-      <label style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 500; color: var(--text-secondary);">
-        <span>Período académico:</span>
-        <select name="period_id" onchange="this.form.submit()" style="height: 38px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 12px; background: var(--bg-surface); font-size: 13.5px;">
-          <option value="">Todos los períodos</option>
-          <?php foreach ($periods as $p): ?>
-            <option value="<?= e($p['id']) ?>" <?= (int)$selectedPeriod === (int)$p['id'] ? 'selected' : '' ?>>
-              <?= e($p['name']) ?> (<?= ucfirst($p['status']) ?>)
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </label>
-      <?php if ($query !== ''): ?>
-        <input type="hidden" name="q" value="<?= e($query) ?>">
-      <?php endif; ?>
-    </form>
+  <div class="toolbar" style="border-bottom: 1px solid var(--border-subtle); padding: 12px 20px;">
+    <div class="toolbar-count">
+      <?= count($sections) ?> <?= count($sections) === 1 ? 'sección registrada' : 'secciones registradas' ?>
+    </div>
   </div>
 
   <?php if (!$sections): ?>

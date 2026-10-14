@@ -506,13 +506,15 @@ Flight::route('GET /secciones', function () {
     $pdo = db();
     $periods = $pdo->query('SELECT * FROM periods ORDER BY start_date DESC')->fetchAll();
     
-    $selectedPeriod = isset($_GET['period_id']) ? (string)$_GET['period_id'] : '';
-    if ($selectedPeriod === '') {
+    $selectedPeriod = $_GET['period_id'] ?? null;
+    if ($selectedPeriod === null) {
         $activeP = array_filter($periods, fn($p) => $p['status'] === 'activo');
         if ($activeP) {
             $selectedPeriod = (string)reset($activeP)['id'];
         } elseif ($periods) {
             $selectedPeriod = (string)$periods[0]['id'];
+        } else {
+            $selectedPeriod = '';
         }
     }
 
@@ -531,7 +533,7 @@ Flight::route('GET /secciones', function () {
     ';
     $params = [];
 
-    if ($selectedPeriod !== '') {
+    if ($selectedPeriod !== '' && $selectedPeriod !== 'all') {
         $sql .= ' AND cs.period_id = ?';
         $params[] = (int)$selectedPeriod;
     }

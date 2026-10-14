@@ -55,7 +55,7 @@ $excelUrl = url('reportes/notas?' . http_build_query([
       <!-- 1. Período -->
       <div class="report-filter-item">
         <label for="f-period">Período</label>
-        <select name="period_id" id="f-period" onchange="document.getElementById('grades-filter-form').submit()">
+        <select name="period_id" id="f-period" class="custom-select filter-select" data-icon="filter" onchange="document.getElementById('grades-filter-form').submit()">
           <?php foreach ($periods as $p): ?>
             <option value="<?= e($p['id']) ?>" <?= ((int)$p['id'] === $sel['period_id']) ? 'selected' : '' ?>>
               <?= e($p['name']) ?><?= $p['status'] === 'activo' ? ' (Activo)' : '' ?>
@@ -67,7 +67,7 @@ $excelUrl = url('reportes/notas?' . http_build_query([
       <!-- 2. Carrera -->
       <div class="report-filter-item">
         <label for="f-career">Carrera</label>
-        <select name="career_id" id="f-career" onchange="document.getElementById('f-course').value='0'; document.getElementById('grades-filter-form').submit()">
+        <select name="career_id" id="f-career" class="custom-select filter-select" data-icon="filter" onchange="document.getElementById('f-course').value='0'; document.getElementById('grades-filter-form').submit()">
           <option value="0">Todas las carreras</option>
           <?php foreach ($careers as $c): ?>
             <option value="<?= e($c['id']) ?>" <?= ((int)$c['id'] === $sel['career_id']) ? 'selected' : '' ?>>
@@ -80,7 +80,7 @@ $excelUrl = url('reportes/notas?' . http_build_query([
       <!-- 3. Curso -->
       <div class="report-filter-item">
         <label for="f-course">Curso</label>
-        <select name="course_id" id="f-course" onchange="document.getElementById('f-section').value='0'; document.getElementById('grades-filter-form').submit()">
+        <select name="course_id" id="f-course" class="custom-select filter-select" data-icon="filter" onchange="document.getElementById('f-section').value='0'; document.getElementById('grades-filter-form').submit()">
           <option value="0">Todos los cursos</option>
           <?php foreach ($courses as $co): ?>
             <option value="<?= e($co['id']) ?>" <?= ((int)$co['id'] === $sel['course_id']) ? 'selected' : '' ?>>
@@ -93,7 +93,7 @@ $excelUrl = url('reportes/notas?' . http_build_query([
       <!-- 4. Sección -->
       <div class="report-filter-item">
         <label for="f-section">Sección</label>
-        <select name="section_id" id="f-section">
+        <select name="section_id" id="f-section" class="custom-select filter-select" data-icon="filter" onchange="document.getElementById('grades-filter-form').submit()">
           <option value="0">Todas las secciones</option>
           <?php foreach ($availableSections as $as): ?>
             <option value="<?= e($as['id']) ?>" <?= ((int)$as['id'] === $sel['section_id']) ? 'selected' : '' ?>>
@@ -104,18 +104,14 @@ $excelUrl = url('reportes/notas?' . http_build_query([
       </div>
 
       <!-- Botones de Acción -->
-      <div class="report-filter-buttons">
-        <button type="submit" class="button primary">
-          <?= icon('filter') ?>
-          <span>Aplicar</span>
-        </button>
-        <?php if ($sel['career_id'] > 0 || $sel['course_id'] > 0 || $sel['section_id'] > 0): ?>
+      <?php if ($sel['career_id'] > 0 || $sel['course_id'] > 0 || $sel['section_id'] > 0): ?>
+        <div class="report-filter-buttons">
           <a class="button secondary" href="<?= e(url('reportes/notas?period_id=' . $sel['period_id'])) ?>">
             <?= icon('x') ?>
             <span>Limpiar</span>
           </a>
-        <?php endif; ?>
-      </div>
+        </div>
+      <?php endif; ?>
     </form>
   </div>
 
