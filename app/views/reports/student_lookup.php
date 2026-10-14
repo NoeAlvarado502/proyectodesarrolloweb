@@ -31,10 +31,6 @@ $careers = $careers ?? [];
         <div style="font-size: 13px; color: var(--text-muted); margin-top: 3px;">
           Expediente académico de <strong><?= e($profile['student']['full_name']) ?></strong> (<?= e($profile['student']['code']) ?>)
         </div>
-      <?php else: ?>
-        <div style="font-size: 13px; color: var(--text-muted); margin-top: 3px;">
-          Expediente académico y consulta de estudiantes
-        </div>
       <?php endif; ?>
     </div>
     <div class="report-actions">
