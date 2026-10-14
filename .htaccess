@@ -1,11 +1,18 @@
-Options -Indexes
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteRule ^(app|database|docs|storage/logs)(/|$) - [F,L,NC]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^ index.php [QSA,L]
-</IfModule>
-<FilesMatch "^(composer\.(json|lock)|README\.md|\.env|\.env\.example)$">
+# Bloqueo de acceso público a archivos sensibles
+<FilesMatch "^(\.env.*|composer\.(json|lock)|\.gitignore|.*\.sql|README\.md)$">
   Require all denied
 </FilesMatch>
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Proteger directorios internos contra acceso directo vía HTTP
+  RewriteRule ^(app|database|docs|storage/logs)(/|$) - [F,L,NC]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

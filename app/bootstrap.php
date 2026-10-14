@@ -33,11 +33,40 @@ function db(): PDO
     $database = getenv('DB_NAME') ?: 'control_academico';
     $user = getenv('DB_USER') ?: 'root';
     $password = getenv('DB_PASSWORD') ?: '';
-    $pdo = new PDO("mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4", $user, $password, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
+
+    try {
+        $pdo = new PDO("mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4", $user, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+    } catch (PDOException $e) {
+        $isLocal = in_array(strtolower((string)$host), ['127.0.0.1', 'localhost', '::1'], true);
+        if ($isLocal && ($e->getCode() === 1049 || str_contains($e->getMessage(), 'Unknown database'))) {
+            try {
+                $tmpPdo = new PDO("mysql:host={$host};port={$port};charset=utf8mb4", $user, $password, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ]);
+                $tmpPdo->exec("CREATE DATABASE IF NOT EXISTS `{$database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+                $pdo = new PDO("mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4", $user, $password, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]);
+                $sqlFile = ROOT_PATH . '/database/setup.sql';
+                if (is_file($sqlFile)) {
+                    $sql = file_get_contents($sqlFile);
+                    if ($sql !== false && trim($sql) !== '') {
+                        $pdo->exec($sql);
+                    }
+                }
+                return $pdo;
+            } catch (Throwable) {
+                throw $e;
+            }
+        }
+        throw $e;
+    }
     return $pdo;
 }
 

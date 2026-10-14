@@ -19,9 +19,8 @@
 -- Current Database: `control_academico`
 --
 
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `control_academico` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
-
-USE `control_academico`;
+-- CREATE DATABASE /*!32312 IF NOT EXISTS*/ `control_academico` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
+-- USE `control_academico`;
 
 --
 -- Table structure for table `career_semester_courses`
