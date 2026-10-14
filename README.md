@@ -46,7 +46,7 @@ A diferencia de aplicaciones pesadas basadas en CMS o frameworks monolíticos, e
 2. **👨‍🎓 Gestión de Alumnos**:
    - Registro con nombres, apellidos, fecha de nacimiento y asignación de carrera.
    - Subida y almacenamiento seguro de fotografías de perfil (`storage/uploads/`).
-   - Expediente individual con consulta de cursos asignados, calificaciones y promedio.
+   - Gestión simplificada con acceso directo y exclusivo a edición (`/alumnos/@id/editar`), centralizando la consulta y constancia del expediente académico en el módulo de reportes.
 
 3. **🏛️ Carreras y Mallas Curriculares**:
    - Catálogo de carreras y planes de estudio.
@@ -59,8 +59,9 @@ A diferencia de aplicaciones pesadas basadas en CMS o frameworks monolíticos, e
 
 5. **👨‍🏫 Catedráticos / Docentes**:
    - Ficha integral con código docente (ej. `C-001`), DPI, correo, teléfono y especialidad/título.
+   - Soporte completo para fotografía de perfil con carga segura, previsualización en vivo (`data-photo-preview`) y visualización en listados, ficha de catedrático y secciones asignadas.
    - Estados de disponibilidad (`activo` / `inactivo`).
-   - Vista detallada del docente con historial de secciones y asignaturas impartidas.
+   - Vista detallada del docente con historial de secciones y carga académica actual.
 
 6. **🗓️ Períodos Académicos**:
    - Ciclos lectivos (ej. `2026-I`, `2026-II`) con fechas de inicio y cierre.
@@ -72,9 +73,9 @@ A diferencia de aplicaciones pesadas basadas en CMS o frameworks monolíticos, e
    - Registro de ponderaciones y actas de calificaciones finales con cálculo de aprobación.
 
 8. **📊 Reportes y Consultas Especializadas**:
-   - **Reporte General de Estudiantes**: Filtros por carrera, período y estado académico.
-   - **Reporte de Calificaciones**: Estadísticas de rendimiento y notas por sección.
-   - **Consulta Individual de Alumno**: Búsqueda instantánea por carné o apellido con historial académico completo.
+   - **Reporte General de Estudiantes (`/reportes/alumnos`)**: Filtros inmediatos por carrera y estado, resumen de matrícula y exportación a Excel / PDF.
+   - **Reporte de Calificaciones (`/reportes/notas`)**: Cuadro de notas por sección y exportación a Excel / PDF.
+   - **Ficha del Alumno / Expediente Académico (`/reportes/consulta-alumno`)**: Rediseñada con buscador interactivo y filtros en tiempo real por carrera y estado académico, listado dinámico de estudiantes con botón de acceso a expediente, ficha académica oficial con desglose por período, cálculo de promedio general, porcentaje de avance en plan curricular y constancia oficial lista para imprimir/PDF.
    - **Vistas preparadas para Impresión**: Reglas CSS `@media print` para exportación limpia a PDF o impresión física sin barras laterales ni botones innecesarios.
 
 ### Seguridad y Validaciones
@@ -140,8 +141,8 @@ ProyectoFinalFlight/
 │       ├── periods/         # Módulo de ciclos y períodos académicos
 │       ├── professors/      # Módulo y ficha de catedráticos
 │       ├── sections/        # Módulo de secciones, horarios e inscripciones
-│       ├── students/        # Módulo de expedientes de alumnos
-│       ├── reports/         # Reportes de notas, alumnos y consulta rápida
+│       ├── students/        # Módulo de gestión y edición de alumnos
+│       ├── reports/         # Reportes de notas, alumnos y ficha de estudiante
 │       ├── components/      # Componentes UI (empty states, alertas, headers)
 │       └── errors/          # Plantillas de error (404, 500)
 │
@@ -155,7 +156,7 @@ ProyectoFinalFlight/
 │
 └── storage/
     ├── logs/                # Registro de actividad y errores
-    └── uploads/             # Directorio seguro de fotografías de alumnos
+    └── uploads/             # Directorio seguro de fotografías de alumnos y catedráticos
 ```
 
 ---
@@ -218,16 +219,16 @@ http://localhost/ProyectoFinalFlight/
 | **Ingreso / Login** | `/login` | Pantalla de inicio de sesión con card interactiva |
 | **Cierre de Sesión** | `/logout` | Destrucción de sesión y redirección protegida |
 | **Inicio** | `/` | Dashboard principal con estadísticas del ciclo |
-| **Alumnos** | `/alumnos` | Listado, registro y expediente de estudiantes |
+| **Alumnos** | `/alumnos` | Listado, registro y edición de estudiantes |
 | **Alumnos (Nuevo)** | `/alumnos/nuevo` | Formulario con carga de fotografía |
 | **Carreras** | `/carreras` | Malla curricular y semestres del plan |
 | **Cursos** | `/cursos` | Catálogo de asignaturas |
-| **Catedráticos** | `/catedraticos` | Registro de docentes y ficha personal |
+| **Catedráticos** | `/catedraticos` | Registro de docentes con fotografía y ficha personal |
 | **Períodos** | `/periodos` | Administración de ciclos lectivos |
 | **Secciones** | `/secciones` | Asignación de cupos, horarios y notas |
 | **Reporte Alumnos** | `/reportes/alumnos` | Matrícula general y filtros por carrera |
 | **Reporte Notas** | `/reportes/notas` | Cuadro de calificaciones por sección |
-| **Consulta Alumno** | `/reportes/consulta-alumno` | Búsqueda por carné e historial académico |
+| **Ficha del Alumno** | `/reportes/consulta-alumno` | Listado interactivo con filtros, consulta de expediente e historial |
 
 ---
 
@@ -277,7 +278,7 @@ El archivo `database/setup.sql` precarga datos listos para probar inmediatamente
   DB_PORT=3307
   ```
 
-### 3. Las imágenes de alumnos no se guardan
+### 3. Las imágenes de alumnos o catedráticos no se guardan
 - Asegúrate de que el directorio `storage/uploads/` tenga permisos de escritura.
 - Verifica en `php.ini` que `file_uploads = On` y que los límites `upload_max_filesize` y `post_max_size` sean suficientes (mínimo 5M).
 
