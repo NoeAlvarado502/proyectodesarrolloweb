@@ -272,7 +272,7 @@ CREATE TABLE `professors` (
 
 LOCK TABLES `professors` WRITE;
 /*!40000 ALTER TABLE `professors` DISABLE KEYS */;
-INSERT INTO `professors` VALUES (1,'C-001','Juan','Pérez García','2456789010101','jperez@universidad.edu.gt','+502 5555-1234','Ing. en Sistemas, Mg. en Educación','activo','2026-10-13 03:21:27'),(2,'C-002','Ana','López Estrada','1890456720101','alopez@universidad.edu.gt','+502 5555-5678','Licda. en Pedagogía','activo','2026-10-13 03:21:27'),(3,'C-003','Luis','Gómez Morales','3012987650101','lgomez@universidad.edu.gt','+502 5555-9012','Msc. en Matemáticas','inactivo','2026-10-13 03:21:27');
+INSERT INTO `professors` VALUES (1,'C-001','Juan','Pérez García','2456789010101','jperez@universidad.edu.gt','+502 5555-1234','Ing. en Sistemas, Mg. en Educación',NULL,'activo','2026-10-13 03:21:27'),(2,'C-002','Ana','López Estrada','1890456720101','alopez@universidad.edu.gt','+502 5555-5678','Licda. en Pedagogía',NULL,'activo','2026-10-13 03:21:27'),(3,'C-003','Luis','Gómez Morales','3012987650101','lgomez@universidad.edu.gt','+502 5555-9012','Msc. en Matemáticas',NULL,'inactivo','2026-10-13 03:21:27');
 /*!40000 ALTER TABLE `professors` ENABLE KEYS */;
 UNLOCK TABLES;
 
